@@ -10,6 +10,8 @@ import Productos from "./pages/panel/Productos.jsx";
 import ProductForm from "./pages/panel/ProductForm.jsx";
 import Cuenta from "./pages/panel/Cuenta.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import ProductPage from "./pages/public/ProductPage.jsx";
+import SellerPage from "./pages/public/SellerPage.jsx";
 import Status from "./Status.jsx";
 
 // La demo es pesada: se carga solo si alguien la abre.
@@ -31,6 +33,9 @@ createRoot(document.getElementById("root")).render(
           </Route>
           <Route path="/demo" element={<Demo />} />
           <Route path="/estado" element={<Status />} />
+          {/* Links públicos: /vendedor y /vendedor/producto (van al final para no pisar las rutas de la app) */}
+          <Route path="/:sellerSlug" element={<SellerPage />} />
+          <Route path="/:sellerSlug/:productSlug" element={<ProductPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
