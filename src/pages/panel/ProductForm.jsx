@@ -88,7 +88,7 @@ export default function ProductForm() {
     const { error } = await supabase.rpc("save_product", { p_id: editing ? id : null, p, r });
     setBusy(false);
     if (error) return setErr(friendlyDbError(error));
-    nav("/panel", { replace: true, state: { flash: editing ? "Cambios guardados ✓" : "¡Publicado! Ya podés compartir tu link." } });
+    nav("/panel/productos", { replace: true, state: { flash: editing ? "Cambios guardados ✓" : "¡Publicado! Ya podés compartir tu link." } });
   };
 
   const input = "mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-3 text-base outline-none focus:border-zinc-900";
@@ -97,7 +97,7 @@ export default function ProductForm() {
 
   return (
     <form onSubmit={save} className="px-5 pb-8 pt-5">
-      <button type="button" onClick={() => nav("/panel")} className="flex items-center gap-1 text-[13px] font-semibold text-zinc-500"><ArrowLeft size={15} /> Mis productos</button>
+      <button type="button" onClick={() => nav("/panel/productos")} className="flex items-center gap-1 text-[13px] font-semibold text-zinc-500"><ArrowLeft size={15} /> Mis productos</button>
       <h1 className="mt-2 font-display text-2xl font-extrabold">{editing ? "Editar producto" : "Cargar un producto"}</h1>
 
       <p className={label}>Fotos <span className="font-normal text-zinc-500">({photos.length}/{MAX_PHOTOS}) · la primera es la portada</span></p>

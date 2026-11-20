@@ -4,6 +4,7 @@ import { MapPin, Truck, Share2, ShieldCheck, BadgeCheck, Store, Package } from "
 import { getProduct, getSellerBySlug } from "../../lib/publicData.js";
 import { fmt } from "../../lib/format.js";
 import Gallery from "../../components/Gallery.jsx";
+import BuyerOffer from "../../components/BuyerOffer.jsx";
 import { Phone } from "../../components/Brand.jsx";
 import { LOGO_HORIZ } from "../../prototype/brand.js";
 
@@ -63,6 +64,7 @@ export default function ProductPage() {
         <h1 className="mt-2 font-display text-[22px] font-extrabold leading-tight">{p.title}</h1>
         <p className="mt-1 text-3xl font-black">{fmt(p.list_price)}</p>
         {!sold && <p className="text-[13px] text-zinc-600">Precio publicado · podés hacer tu oferta</p>}
+        {!sold && <BuyerOffer product={p} seller={seller} />}
 
         <ul className="mt-4 space-y-2 text-[14px] text-zinc-700">
           {p.location && <li className="flex gap-2"><MapPin size={17} className="mt-0.5 shrink-0 text-zinc-500" /> Entrega en {p.location}</li>}
@@ -97,16 +99,11 @@ export default function ProductPage() {
         <p className="mt-6 text-center text-[10px] leading-relaxed text-zinc-400">Haceme Precio es una herramienta para gestionar ofertas entre partes. No actúa como intermediario financiero ni garantiza entregas.</p>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-zinc-200 bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur">
-        {sold ? (
+      {sold ? (
+        <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-zinc-200 bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur">
           <Link to={`/${seller.slug}`} className="flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-ink text-[16px] font-semibold text-white">Ver otras cosas de {seller.name}</Link>
-        ) : (
-          <button disabled className="flex min-h-[52px] w-full flex-col items-center justify-center rounded-2xl bg-hpred text-white opacity-60">
-            <span className="text-[16px] font-semibold">Hacer mi oferta</span>
-            <span className="text-[11px]">Se activa en la próxima actualización</span>
-          </button>
-        )}
-      </div>
+        </div>
+      ) : null}
     </Phone>
   );
 }
