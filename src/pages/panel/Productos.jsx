@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useOutletContext } from "react-router-dom";
-import { Lock, Link2, Pencil, Pause, Play, CheckCircle2, Trash2, Plus, Zap } from "lucide-react";
+import { Lock, Link2, Pencil, Pause, Play, CheckCircle2, Trash2, Plus, Zap, Eye } from "lucide-react";
 import { supabase } from "../../lib/supabase.js";
 import { removePhotos } from "../../lib/photos.js";
 import { fmt } from "../../lib/format.js";
@@ -76,7 +76,7 @@ export default function Productos() {
             </div>
           ) : (
             <ul className="mt-4 space-y-3">
-              {items.map((p) => <Item key={p.id} p={p} onStatus={setStatus} onRemove={remove} onCopy={copyLink} />)}
+              {items.map((p) => <Item key={p.id} p={p} sellerSlug={seller.slug} onStatus={setStatus} onRemove={remove} onCopy={copyLink} />)}
             </ul>
           )}
       </main>
@@ -84,7 +84,7 @@ export default function Productos() {
   );
 }
 
-function Item({ p, onStatus, onRemove, onCopy }) {
+function Item({ p, sellerSlug, onStatus, onRemove, onCopy }) {
   const [confirm, setConfirm] = useState(false);
   const r = Array.isArray(p.product_rules) ? p.product_rules[0] : p.product_rules;
   const st = p.moderation === "pausada" ? { t: "Pausado por revisión", c: "bg-rose-100 text-rose-800" } : STATUS[p.status];
@@ -105,6 +105,7 @@ function Item({ p, onStatus, onRemove, onCopy }) {
       </div>
       <div className="grid grid-cols-4 gap-1.5 border-t border-zinc-100 p-2">
         <button onClick={() => onCopy(p)} className={btn + " col-span-2 bg-hpred text-white ring-0"}><Link2 size={14} /> Copiar link</button>
+        <a href={`/${sellerSlug}/${p.slug}`} target="_blank" rel="noreferrer" className={btn + " col-span-2"}><Eye size={13} /> Ver como comprador</a>
         <Link to={`/panel/producto/${p.id}`} className={btn}><Pencil size={13} /> Editar</Link>
         {p.status === "activa" ? <button onClick={() => onStatus(p, "pausada")} className={btn}><Pause size={13} /> Pausar</button>
           : <button onClick={() => onStatus(p, "activa")} className={btn}><Play size={13} /> Activar</button>}

@@ -52,7 +52,7 @@ function Onboarding({ seller, account, onDone }) {
   const save = async (e) => {
     e.preventDefault();
     setErr("");
-    if (!validSlug(finalSlug)) return setErr("El link tiene que tener entre 3 y 40 letras o números.");
+    if (!validSlug(finalSlug)) return setErr("Ese link no se puede usar. Probá con otro (entre 3 y 40 letras o números).");
     setBusy(true);
     const { error } = await supabase.from("sellers").update({ name: name.trim(), slug: finalSlug }).eq("id", seller.id);
     setBusy(false);

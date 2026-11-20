@@ -21,7 +21,8 @@ export default function Cuenta() {
       <main className="px-5 pt-6">
         <p className="text-sm text-zinc-500">Mi cuenta</p>
         <h1 className="font-display text-2xl font-extrabold">{seller.name}</h1>
-        <p className="mt-1 font-mono text-[13px] text-zinc-600">{window.location.host}/{seller.slug}</p>
+        <a href={`/${seller.slug}`} target="_blank" rel="noreferrer" className="mt-1 block font-mono text-[13px] text-hpred underline">{window.location.host}/{seller.slug}</a>
+        <p className="text-[12px] text-zinc-500">Tu vidriera: todo lo que publicás, en un solo link.</p>
 
         <section className="mt-5 rounded-2xl bg-ink p-4 text-white">
           <div className="flex items-center justify-between">
