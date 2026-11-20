@@ -5486,3 +5486,6 @@ function AdminTickets({ tickets, sellers, actions }) {
     </>
   );
 }
+
+// Exportado para usarlo como página real en src/pages/Landing.jsx
+export { LandingPage };
