@@ -43,7 +43,7 @@ export default function CategoryPicker({ sellerId, value, onChange }) {
     <div className="mt-2">
       {all.length > 0 && (
         <>
-          <p className="text-[12px] font-semibold text-zinc-500">Tus categorías</p>
+          <p className="text-[12px] font-semibold text-zinc-500">Las que ya usás</p>
           <div className="mt-1.5 flex flex-wrap gap-2">{all.map((c) => <Chip key={c} c={c} />)}</div>
         </>
       )}
