@@ -12,14 +12,14 @@ export async function getSellerBySlug(slug) {
 
 export async function getProduct(sellerId, slug) {
   const { data } = await supabase.from("products")
-    .select("id, slug, title, description, category, collection, condition, mode, list_price, compare_at, photos, color_photos, has_variants, liquidation, stock, location, shipping_enabled, shipping_note, status, created_at, product_variants(color, size, stock)")
+    .select("id, slug, title, description, category, collection, condition, mode, list_price, compare_at, photos, color_photos, has_variants, stock, location, shipping_enabled, shipping_note, status, created_at, product_variants(color, size, stock)")
     .eq("seller_id", sellerId).eq("slug", slug).in("status", ["activa", "vendida"]).maybeSingle();
   return data;
 }
 
 export async function getSellerProducts(sellerId) {
   const { data } = await supabase.from("products")
-    .select("id, slug, title, list_price, compare_at, photos, status, condition, mode, collection, liquidation, stock")
+    .select("id, slug, title, list_price, compare_at, photos, status, condition, mode, collection, stock")
     .eq("seller_id", sellerId).in("status", ["activa", "vendida"])
     .order("status", { ascending: true }).order("created_at", { ascending: false });
   return data || [];

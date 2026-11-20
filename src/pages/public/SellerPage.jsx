@@ -80,7 +80,6 @@ export default function SellerPage() {
                   <img src={p.photos?.[0]} alt={p.title} loading="lazy" className={`h-full w-full object-cover ${p.status === "vendida" ? "opacity-50 grayscale" : ""}`} />
                   {p.status === "vendida" ? <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">Vendido</span>
                     : p.mode === "fijo" && p.stock <= 0 ? <span className="absolute left-2 top-2 rounded-full bg-zinc-700 px-2 py-0.5 text-[10px] font-bold text-white">Sin stock</span>
-                    : p.liquidation ? <span className="absolute left-2 top-2 rounded-full bg-hpred px-2 py-0.5 text-[10px] font-bold text-white">🔥 Haceme precio</span>
                     : p.compare_at > p.list_price ? <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">-{Math.round((1 - p.list_price / p.compare_at) * 100)}%</span> : null}
                 </div>
                 <div className="p-2.5">

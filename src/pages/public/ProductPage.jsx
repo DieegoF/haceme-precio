@@ -51,7 +51,7 @@ export default function ProductPage() {
   );
 
   const sold = p.status === "vendida";
-  const fixed = p.mode === "fijo";
+  const fixed = p.mode === "fijo" || Boolean(seller.store); // la tienda nunca recibe ofertas
   const store = seller.store;
   const gallery = color && p.color_photos?.[color]?.length ? p.color_photos[color] : p.photos;
   const off = fixed && p.compare_at > p.list_price ? Math.round((1 - p.list_price / p.compare_at) * 100) : 0;
@@ -65,7 +65,6 @@ export default function ProductPage() {
 
       <main className="px-5 pt-4">
         <div className="flex flex-wrap gap-1.5">
-          {p.liquidation && <span className="rounded-full bg-hpred px-2.5 py-0.5 text-[11px] font-bold text-white">🔥 Liquidación · haceme precio</span>}
           {fixed && p.collection && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.collection}</span>}
           {!fixed && p.condition && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.condition}</span>}
           {!fixed && p.category && !store && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.category}</span>}
