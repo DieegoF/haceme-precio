@@ -11,7 +11,7 @@ const PLANS = {
   tienda: "Tienda · $40.000/mes",
 };
 
-// Login sin contraseña: email → link (o código, cuando tengamos SMTP propio con plantilla) → adentro.
+// Login sin contraseña: email → código de 6 números (plantilla con {{ .Token }} vía Resend). El link también funciona.
 export default function Login() {
   const { session } = useAuth();
   const [params] = useSearchParams();
@@ -62,32 +62,27 @@ export default function Login() {
         {step === "email" ? (
           <form onSubmit={sendCode}>
             <h1 className="font-display text-2xl font-extrabold">Entrá con tu email</h1>
-            <p className="mt-1 text-sm text-zinc-600">Te mandamos un link para entrar. Sin contraseñas.</p>
+            <p className="mt-1 text-sm text-zinc-600">Te mandamos un código de 6 números. Sin contraseñas.</p>
             <label className="mt-6 block text-sm font-semibold" htmlFor="email">Tu email</label>
             <input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vos@gmail.com" className={input} />
             {err && <p className="mt-2 text-sm font-semibold text-hpred">{err}</p>}
-            <button className={btn} disabled={busy || !/^\S+@\S+\.\S+$/.test(email)}>{busy ? "Enviando…" : "Enviarme el link"}</button>
+            <button className={btn} disabled={busy || !/^\S+@\S+\.\S+$/.test(email)}>{busy ? "Enviando…" : "Enviarme el código"}</button>
             <p className="mt-4 text-center text-[12px] text-zinc-500">Si es tu primera vez, se crea tu cuenta sola.</p>
           </form>
         ) : (
           <form onSubmit={verify}>
             <h1 className="font-display text-2xl font-extrabold">Revisá tu email</h1>
-            <p className="mt-1 text-sm text-zinc-600">Te mandamos un email a <b>{email}</b>. Tocá <b>«Sign in»</b> y entrás directo.</p>
-            <ul className="mt-4 space-y-1.5 rounded-2xl bg-zinc-50 p-4 text-[13px] text-zinc-700 ring-1 ring-zinc-200">
-              <li>• Abrilo desde este mismo celular o compu.</li>
-              <li>• Si no aparece, mirá en spam o promociones.</li>
-              <li>• El link sirve una sola vez y vence en 1 hora.</li>
-            </ul>
-            <p className="mt-6 text-[12px] text-zinc-500">¿Te llegó un código de números en vez de un link?</p>
-            <label className="mt-1 block text-sm font-semibold" htmlFor="code">Código</label>
+            <p className="mt-1 text-sm text-zinc-600">Te mandamos un código a <b>{email}</b>. Si no aparece, mirá en spam o promociones.</p>
+            <label className="mt-6 block text-sm font-semibold" htmlFor="code">Código de 6 números</label>
             <input id="code" inputMode="numeric" autoComplete="one-time-code" maxLength={8} required value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="123456" className={input + " text-center font-mono text-2xl tracking-[0.4em]"} />
             {err && <p className="mt-2 text-sm font-semibold text-hpred">{err}</p>}
-            <button className={btn} disabled={busy || code.length < 6}>{busy ? "Revisando…" : "Entrar con el código"}</button>
+            <button className={btn} disabled={busy || code.length < 6}>{busy ? "Revisando…" : "Entrar"}</button>
             <div className="mt-4 flex justify-between text-[13px] font-semibold">
               <button type="button" onClick={() => { setStep("email"); setCode(""); setErr(""); }} className="text-zinc-500 underline">Cambiar email</button>
-              <button type="button" onClick={sendCode} disabled={busy} className="text-hpred underline">Reenviar email</button>
+              <button type="button" onClick={sendCode} disabled={busy} className="text-hpred underline">Reenviar código</button>
             </div>
+            <p className="mt-6 text-center text-[12px] text-zinc-500">¿Te llegó un link en vez de un código? Tocalo desde este mismo dispositivo y entrás igual.</p>
           </form>
         )}
       </main>
