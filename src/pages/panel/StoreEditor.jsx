@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronDown, Plus, Store, Trash2, Zap } from "lucide-react";
 import { moneyInput, parseMoney } from "../../lib/format.js";
+import { normText } from "../../lib/promo.js";
 import { supabase } from "../../lib/supabase.js";
 import { BrandEditor, StoreAvatar } from "../../components/StoreBrand.jsx";
 
@@ -10,6 +11,21 @@ export default function StoreEditor({ seller, store, onSaved }) {
   const [f, setF] = useState(() => fromStore(store));
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  // Categorías reales de la tienda, para elegir dónde aplica la promo (y avisar qué está en liquidación).
+  const [cats, setCats] = useState([]);
+  useEffect(() => {
+    if (!open) return;
+    supabase.from("products").select("collection, liquidation").eq("seller_id", seller.id).neq("status", "vendida").then(({ data }) => {
+      const m = new Map();
+      (data || []).forEach((p) => {
+        if (!p.collection) return;
+        const k = normText(p.collection);
+        const c = m.get(k) || { name: p.collection.trim(), total: 0, liq: 0 };
+        c.total += 1; if (p.liquidation) c.liq += 1; m.set(k, c);
+      });
+      setCats([...m.values()].sort((a, b) => a.name.localeCompare(b.name)));
+    });
+  }, [open, seller.id]);
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
   const setPromo = (k) => (e) => setF((x) => ({ ...x, promo: { ...x.promo, [k]: e.target.value } }));
   const setFaq = (i, k) => (e) => setF((x) => ({ ...x, faqList: x.faqList.map((q, j) => (j === i ? { ...q, [k]: e.target.value } : q)) }));
@@ -73,10 +89,17 @@ export default function StoreEditor({ seller, store, onSaved }) {
                     {[5, 10, 15, 20, 25, 30, 40, 50, 60, 70].map((n) => <option key={n} value={n}>{n}% OFF</option>)}
                   </select>
                 </label>
-                <label className="block text-sm font-semibold">En<input maxLength={30} value={f.promo.scope} onChange={setPromo("scope")} placeholder="Todo" className={input} /></label>
+                <label className="block text-sm font-semibold">En
+                  <select value={f.promo.scope} onChange={setPromo("scope")} className={input}>
+                    <option value="Todo">Toda la tienda</option>
+                    {cats.map((c) => <option key={c.name} value={c.name}>{c.name} ({c.total})</option>)}
+                    {f.promo.scope !== "Todo" && !cats.some((c) => normText(c.name) === normText(f.promo.scope)) && <option value={f.promo.scope}>{f.promo.scope} (sin productos)</option>}
+                  </select>
+                </label>
               </div>
               <label className="block text-sm font-semibold">Termina<input type="datetime-local" value={f.promo.ends} onChange={setPromo("ends")} className={input} /></label>
-              <p className="text-[12px] text-zinc-500">Con descuento, el precio baja solo en la tienda y en el pedido. En «En» poné «Todo» o el nombre de una categoría (ej: Remeras). No se suma a la liquidación. Cuando termina, desaparece sola.</p>
+              <PromoScopeNote cats={cats} promo={f.promo} />
+              <p className="text-[12px] text-zinc-500">Con descuento, el precio baja solo en la tienda y en el pedido. Cuando termina, desaparece sola.</p>
             </div>
           )}
 
@@ -121,4 +144,19 @@ function fromStore(store) {
     promo: { text: p?.text || "", pct: p?.pct ? String(p.pct) : "", scope: p?.scope || "Todo", ends: toLocal(p?.ends_at && new Date(p.ends_at) > new Date() ? new Date(p.ends_at) : inThree) },
     faqList: Array.isArray(store.faq) ? store.faq : [],
   };
+}
+
+// Avisa a qué productos aplica la promo y cuáles quedan afuera por estar en liquidación.
+function PromoScopeNote({ cats, promo }) {
+  const all = normText(promo.scope) === "todo";
+  const list = all ? cats : cats.filter((c) => normText(c.name) === normText(promo.scope));
+  const total = list.reduce((t, c) => t + c.total, 0), liq = list.reduce((t, c) => t + c.liq, 0);
+  if (!all && total === 0) return <p className="rounded-xl bg-rose-50 p-2.5 text-[12px] font-semibold text-rose-800 ring-1 ring-rose-200">Esta categoría no tiene productos: la promo no le va a bajar el precio a nada. Elegí otra de la lista.</p>;
+  if (!promo.pct) return null;
+  return (
+    <p className="rounded-xl bg-emerald-50 p-2.5 text-[12px] text-emerald-900 ring-1 ring-emerald-200">
+      Baja el precio de <b>{total - liq} {total - liq === 1 ? "producto" : "productos"}</b>{all ? " de toda la tienda" : ` de ${list[0].name}`}.
+      {liq > 0 && <> {liq === 1 ? "1 está" : `${liq} están`} en <b>liquidación</b> y {liq === 1 ? "mantiene" : "mantienen"} su precio de remate (no se suman los descuentos).</>}
+    </p>
+  );
 }
