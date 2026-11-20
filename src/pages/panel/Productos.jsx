@@ -24,7 +24,7 @@ export default function Productos() {
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.from("products")
-      .select("id, slug, title, list_price, photos, status, moderation, stock, product_rules(floor_price, auto_accept_pct)")
+      .select("id, slug, title, list_price, photos, status, moderation, stock, mode, product_rules(floor_price, auto_accept_pct)")
       .eq("seller_id", seller.id).order("created_at", { ascending: false });
     if (error) setErr("No pudimos cargar tus productos.");
     setItems(data || []);
@@ -100,7 +100,8 @@ function Item({ p, sellerSlug, onStatus, onRemove, onCopy }) {
           </div>
           <p className="mt-0.5 text-[16px] font-extrabold">{fmt(p.list_price)}</p>
           {r && <p className="flex items-center gap-1 text-[12px] text-zinc-500"><Lock size={11} /> Mínimo {fmt(r.floor_price)}{r.auto_accept_pct ? <> · <Zap size={11} /> sola desde {fmt(Math.round(p.list_price * r.auto_accept_pct / 100))}</> : null}</p>}
-          {p.stock > 1 && <p className="text-[12px] text-zinc-500">{p.stock} unidades</p>}
+          {p.mode === "fijo" && <p className="text-[12px] text-zinc-500">Precio fijo · {p.stock > 0 ? `${p.stock} en stock` : <b className="text-hpred">sin stock</b>}</p>}
+          {p.mode !== "fijo" && p.stock > 1 && <p className="text-[12px] text-zinc-500">{p.stock} unidades</p>}
         </div>
       </div>
       <div className="grid grid-cols-4 gap-1.5 border-t border-zinc-100 p-2">
@@ -109,7 +110,7 @@ function Item({ p, sellerSlug, onStatus, onRemove, onCopy }) {
         <Link to={`/panel/producto/${p.id}`} className={btn}><Pencil size={13} /> Editar</Link>
         {p.status === "activa" ? <button onClick={() => onStatus(p, "pausada")} className={btn}><Pause size={13} /> Pausar</button>
           : <button onClick={() => onStatus(p, "activa")} className={btn}><Play size={13} /> Activar</button>}
-        {p.status !== "vendida" && <button onClick={() => onStatus(p, "vendida")} className={btn + " col-span-2"}><CheckCircle2 size={13} /> Marcar vendido</button>}
+        {p.status !== "vendida" && p.mode !== "fijo" && <button onClick={() => onStatus(p, "vendida")} className={btn + " col-span-2"}><CheckCircle2 size={13} /> Marcar vendido</button>}
         {!confirm ? <button onClick={() => setConfirm(true)} className={btn + " col-span-2 text-rose-700"}><Trash2 size={13} /> Borrar</button>
           : <button onClick={() => onRemove(p)} className={btn + " col-span-2 bg-rose-600 text-white ring-0"}>¿Seguro? Borrar</button>}
       </div>

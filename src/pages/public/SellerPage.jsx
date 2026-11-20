@@ -14,6 +14,7 @@ export default function SellerPage() {
   const { sellerSlug } = useParams();
   const [state, setState] = useState({ loading: true });
   const [shared, setShared] = useState("");
+  const [col, setCol] = useState("Todo");
 
   useEffect(() => {
     let alive = true;
@@ -31,6 +32,8 @@ export default function SellerPage() {
   if (!state.seller) return <NotFound />;
   const { seller, products } = state;
   const active = products.filter((p) => p.status === "activa");
+  const collections = ["Todo", ...new Set(products.map((p) => p.collection).filter(Boolean))];
+  const shown = col === "Todo" ? products : products.filter((p) => p.collection === col);
 
   const share = async () => {
     try {
@@ -60,22 +63,35 @@ export default function SellerPage() {
       {products.length === 0 ? (
         <p className="px-6 py-16 text-center text-sm text-zinc-500">Todavía no hay publicaciones. ¡Volvé pronto!</p>
       ) : (
-        <ul className="mt-5 grid grid-cols-2 gap-3 px-4">
-          {products.map((p) => (
+        <>
+        {seller.store && collections.length > 2 && (
+          <div className="mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+            {collections.map((c) => (
+              <button key={c} onClick={() => setCol(c)} style={col === c ? { backgroundColor: seller.store.color } : undefined}
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${col === c ? "text-white" : "bg-zinc-100 text-zinc-700"}`}>{c}</button>
+            ))}
+          </div>
+        )}
+        <ul className="mt-4 grid grid-cols-2 gap-3 px-4">
+          {shown.map((p) => (
             <li key={p.id}>
               <Link to={`/${seller.slug}/${p.slug}`} className="block overflow-hidden rounded-2xl bg-white ring-1 ring-zinc-200">
                 <div className="relative aspect-square bg-zinc-100">
                   <img src={p.photos?.[0]} alt={p.title} loading="lazy" className={`h-full w-full object-cover ${p.status === "vendida" ? "opacity-50 grayscale" : ""}`} />
-                  {p.status === "vendida" && <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">Vendido</span>}
+                  {p.status === "vendida" ? <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">Vendido</span>
+                    : p.mode === "fijo" && p.stock <= 0 ? <span className="absolute left-2 top-2 rounded-full bg-zinc-700 px-2 py-0.5 text-[10px] font-bold text-white">Sin stock</span>
+                    : p.liquidation ? <span className="absolute left-2 top-2 rounded-full bg-hpred px-2 py-0.5 text-[10px] font-bold text-white">🔥 Haceme precio</span>
+                    : p.compare_at > p.list_price ? <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">-{Math.round((1 - p.list_price / p.compare_at) * 100)}%</span> : null}
                 </div>
                 <div className="p-2.5">
                   <p className="line-clamp-2 text-[13px] font-medium leading-snug">{p.title}</p>
-                  <p className="mt-1 text-[15px] font-extrabold">{fmt(p.list_price)}</p>
+                  <p className="mt-1 text-[15px] font-extrabold">{fmt(p.list_price)} {p.compare_at > p.list_price && <span className="text-[12px] font-medium text-zinc-400 line-through">{fmt(p.compare_at)}</span>}</p>
                 </div>
               </Link>
             </li>
           ))}
         </ul>
+        </>
       )}
     </Phone>
   );
