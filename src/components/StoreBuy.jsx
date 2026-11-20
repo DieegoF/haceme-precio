@@ -1,17 +1,20 @@
 import React, { useMemo, useState } from "react";
-import { MessageCircle, Minus, Plus } from "lucide-react";
+import { Check, Minus, Plus, ShoppingBag } from "lucide-react";
+import CartSheet from "./CartSheet.jsx";
+import { useCart } from "../lib/cart.js";
 import { Swatch, sortSizes } from "../lib/variants.jsx";
 import { fmt } from "../lib/format.js";
-import { waLink } from "../lib/offers.js";
 
-// Compra en una tienda (precio fijo): color → talle → cantidad. Por ahora «Lo quiero» abre WhatsApp;
-// en la parte 3 de la fase 3 lo reemplaza el carrito.
+// Compra en una tienda (precio fijo): color → talle → cantidad → al carrito.
 export default function StoreBuy({ product: p, seller, store, color, onColor }) {
   const variants = p.product_variants || [];
   const colors = useMemo(() => [...new Set(variants.map((v) => v.color).filter(Boolean))], [variants]);
   const sizes = useMemo(() => sortSizes([...new Set(variants.map((v) => v.size).filter(Boolean))]), [variants]);
   const [size, setSize] = useState(null);
   const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
+  const [open, setOpen] = useState(false);
+  const cart = useCart(seller.id);
   const stockOf = (c, s) => variants.find((v) => v.color === (c || "") && v.size === (s || ""))?.stock ?? 0;
   const colorStock = (c) => variants.filter((v) => v.color === c).reduce((t, v) => t + v.stock, 0);
 
@@ -21,8 +24,12 @@ export default function StoreBuy({ product: p, seller, store, color, onColor }) 
   const soldOut = p.stock <= 0;
   const max = Math.max(1, available || 1);
 
-  const label = [color, size && `talle ${size}`].filter(Boolean).join(", ");
-  const msg = `¡Hola ${seller.name}! Quiero ${qty > 1 ? `${qty} × ` : ""}«${p.title}»${label ? ` (${label})` : ""} a ${fmt(p.list_price)} que vi en tu tienda: ${window.location.href}`;
+  const inCart = cart.items.filter((i) => i.product_id === p.id && (i.color || "") === (color || "") && (i.size || "") === (size || "")).reduce((t, i) => t + i.qty, 0);
+  const addToCart = () => {
+    const photo = (color && p.color_photos?.[color]?.[0]) || p.photos?.[0] || null;
+    cart.add({ product_id: p.id, slug: p.slug, title: p.title, photo, color: color || "", size: size || "", qty, price: p.list_price, max: available });
+    setAdded(true); setQty(1); setTimeout(() => setAdded(false), 2200);
+  };
 
   return (
     <div className="mt-4 space-y-4">
@@ -72,14 +79,22 @@ export default function StoreBuy({ product: p, seller, store, color, onColor }) 
         {soldOut ? (
           <p className="flex min-h-[52px] items-center justify-center rounded-2xl bg-zinc-100 font-semibold text-zinc-500">Sin stock por ahora</p>
         ) : ready && available > 0 ? (
-          <a href={waLink(store?.whatsapp, msg)} target="_blank" rel="noreferrer" style={{ backgroundColor: store?.color || "#C8102E" }}
-            className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl text-[16px] font-semibold text-white">
-            <MessageCircle size={18} /> Lo quiero · {fmt(p.list_price * qty)}
-          </a>
+          <div className="flex gap-2">
+            {cart.count > 0 && (
+              <button type="button" onClick={() => setOpen(true)} className="relative flex min-h-[52px] w-14 shrink-0 items-center justify-center rounded-2xl ring-1 ring-zinc-300" aria-label={`Ver carrito (${cart.count})`}>
+                <ShoppingBag size={20} /><span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-ink px-1 text-[11px] font-bold text-white">{cart.count}</span>
+              </button>
+            )}
+            <button type="button" onClick={addToCart} disabled={inCart >= available} style={{ backgroundColor: store?.color || "#C8102E" }}
+              className="flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-2xl text-[16px] font-semibold text-white disabled:opacity-50">
+              {added ? <><Check size={18} /> Agregado</> : inCart >= available ? "Ya tenés todo el stock" : <><ShoppingBag size={18} /> Agregar · {fmt(p.list_price * qty)}</>}
+            </button>
+          </div>
         ) : (
           <p className="flex min-h-[52px] items-center justify-center rounded-2xl bg-zinc-100 text-[15px] font-semibold text-zinc-500">{needColor && !color ? "Elegí color" : "Elegí tu talle"}</p>
         )}
       </div>
+      {open && <CartSheet seller={seller} store={store} onClose={() => setOpen(false)} />}
     </div>
   );
 }

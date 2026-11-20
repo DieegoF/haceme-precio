@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { Inbox, Package, Plus, User } from "lucide-react";
+import { Inbox, Package, Plus, ShoppingBag, User } from "lucide-react";
 import { supabase } from "../../lib/supabase.js";
 import { useSeller } from "../../lib/useSeller.js";
 import { slugify, validSlug } from "../../lib/slug.js";
@@ -21,7 +21,7 @@ export default function PanelLayout() {
           <>
             <div className="flex-1 pb-24"><Outlet context={ctx} /></div>
             <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto grid max-w-md grid-cols-4 border-t border-zinc-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
-              <Tab to="/panel" end Icon={Inbox} label="Ofertas" />
+              {seller.is_store ? <Tab to="/panel" end Icon={ShoppingBag} label="Pedidos" /> : <Tab to="/panel" end Icon={Inbox} label="Ofertas" />}
               <Tab to="/panel/productos" Icon={Package} label="Productos" />
               <Tab to="/panel/cargar" Icon={Plus} label="Cargar" strong />
               <Tab to="/panel/cuenta" Icon={User} label="Mi cuenta" />

@@ -8,6 +8,7 @@ import { fmt } from "../../lib/format.js";
 import { Phone } from "../../components/Brand.jsx";
 import { LOGO_HORIZ } from "../../prototype/brand.js";
 import NotFound from "../NotFound.jsx";
+import { CartBar } from "../../components/CartSheet.jsx";
 
 // Vidriera del vendedor: todo lo que tiene publicado, en un solo link.
 export default function SellerPage() {
@@ -45,7 +46,7 @@ export default function SellerPage() {
   };
 
   return (
-    <Phone className="pb-10">
+    <Phone className={seller.store ? "pb-28" : "pb-10"}>
       <header className="flex items-center justify-between px-4 py-3">
         <Link to="/" aria-label="Haceme Precio"><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-6 w-auto" /></Link>
         <button onClick={share} className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-[12px] font-semibold"><Share2 size={13} /> {shared || "Compartir"}</button>
@@ -95,6 +96,7 @@ export default function SellerPage() {
         </ul>
         </>
       )}
+      {seller.store && <CartBar seller={seller} store={seller.store} />}
     </Phone>
   );
 }
