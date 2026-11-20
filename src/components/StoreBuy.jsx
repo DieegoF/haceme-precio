@@ -6,7 +6,8 @@ import { Swatch, sortSizes } from "../lib/variants.jsx";
 import { fmt } from "../lib/format.js";
 
 // Compra en una tienda (precio fijo): color → talle → cantidad → al carrito.
-export default function StoreBuy({ product: p, seller, store, color, onColor }) {
+export default function StoreBuy({ product: p, seller, store, price, color, onColor }) {
+  const unit = price ?? p.list_price;
   const variants = p.product_variants || [];
   const colors = useMemo(() => [...new Set(variants.map((v) => v.color).filter(Boolean))], [variants]);
   const sizes = useMemo(() => sortSizes([...new Set(variants.map((v) => v.size).filter(Boolean))]), [variants]);
@@ -27,7 +28,7 @@ export default function StoreBuy({ product: p, seller, store, color, onColor }) 
   const inCart = cart.items.filter((i) => i.product_id === p.id && (i.color || "") === (color || "") && (i.size || "") === (size || "")).reduce((t, i) => t + i.qty, 0);
   const addToCart = () => {
     const photo = (color && p.color_photos?.[color]?.[0]) || p.photos?.[0] || null;
-    cart.add({ product_id: p.id, slug: p.slug, title: p.title, photo, color: color || "", size: size || "", qty, price: p.list_price, max: available });
+    cart.add({ product_id: p.id, slug: p.slug, title: p.title, photo, color: color || "", size: size || "", qty, price: unit, max: available });
     setAdded(true); setQty(1); setTimeout(() => setAdded(false), 2200);
   };
 
@@ -87,7 +88,7 @@ export default function StoreBuy({ product: p, seller, store, color, onColor }) 
             )}
             <button type="button" onClick={addToCart} disabled={inCart >= available} style={{ backgroundColor: store?.color || "#C8102E" }}
               className="flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-2xl text-[16px] font-semibold text-white disabled:opacity-50">
-              {added ? <><Check size={18} /> Agregado</> : inCart >= available ? "Ya tenés todo el stock" : <><ShoppingBag size={18} /> Agregar · {fmt(p.list_price * qty)}</>}
+              {added ? <><Check size={18} /> Agregado</> : inCart >= available ? "Ya tenés todo el stock" : <><ShoppingBag size={18} /> Agregar · {fmt(unit * qty)}</>}
             </button>
           </div>
         ) : (

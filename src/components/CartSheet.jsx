@@ -83,6 +83,13 @@ export default function CartSheet({ seller, store, onClose }) {
               })}
             </ul>
 
+            {store?.shipping_enabled && store.free_ship_from > 0 && (
+              <div className="mt-4 rounded-2xl bg-emerald-50 p-3 ring-1 ring-emerald-200">
+                <p className="text-[13px] font-semibold text-emerald-800">{cart.total >= store.free_ship_from ? "🎉 ¡Tenés envío gratis!" : `Te faltan ${fmt(store.free_ship_from - cart.total)} para el envío gratis`}</p>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-emerald-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${Math.min(100, (cart.total / store.free_ship_from) * 100)}%` }} /></div>
+              </div>
+            )}
+
             <p className="mt-6 text-sm font-semibold">¿Cómo lo recibís?</p>
             <div className="mt-2 space-y-2">
               {options.includes("retiro") && (
@@ -96,7 +103,7 @@ export default function CartSheet({ seller, store, onClose }) {
                 <label className={`flex cursor-pointer gap-3 rounded-2xl p-3 ring-2 ${f.delivery === "envio" ? "ring-ink" : "ring-zinc-200"}`}>
                   <input type="radio" name="delivery" checked={f.delivery === "envio"} onChange={() => setF((x) => ({ ...x, delivery: "envio" }))} className="mt-1" />
                   <span><span className="flex items-center gap-1.5 text-[14px] font-bold"><Truck size={15} /> Envío</span>
-                    <span className="block text-[12px] text-zinc-500">{store.shipping_note || "Costo a coordinar con el local"}</span></span>
+                    <span className="block text-[12px] text-zinc-500">{store.free_ship_from > 0 && cart.total >= store.free_ship_from ? "Gratis" : store.shipping_note || "Costo a coordinar con el local"}</span></span>
                 </label>
               )}
             </div>
