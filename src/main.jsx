@@ -9,6 +9,7 @@ import PanelLayout from "./pages/panel/PanelLayout.jsx";
 import Productos from "./pages/panel/Productos.jsx";
 import ProductForm from "./pages/panel/ProductForm.jsx";
 import Cuenta from "./pages/panel/Cuenta.jsx";
+import Ofertas from "./pages/panel/Ofertas.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import ProductPage from "./pages/public/ProductPage.jsx";
 import SellerPage from "./pages/public/SellerPage.jsx";
@@ -25,7 +26,8 @@ createRoot(document.getElementById("root")).render(
           <Route path="/" element={<Landing />} />
           <Route path="/ingresar" element={<Login />} />
           <Route path="/panel" element={<RequireAuth><PanelLayout /></RequireAuth>}>
-            <Route index element={<Productos />} />
+            <Route index element={<Ofertas />} />
+            <Route path="productos" element={<Productos />} />
             <Route path="cargar" element={<ProductForm />} />
             <Route path="producto/:id" element={<ProductForm />} />
             <Route path="cuenta" element={<Cuenta />} />
