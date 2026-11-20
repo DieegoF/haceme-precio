@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
-import { Camera, X, Lock, Loader2, ArrowLeft } from "lucide-react";
+import { Camera, Images, X, Lock, Loader2, ArrowLeft } from "lucide-react";
 import { supabase } from "../../lib/supabase.js";
 import { uploadPhoto, removePhotos } from "../../lib/photos.js";
 import { fmt, parseMoney, moneyInput } from "../../lib/format.js";
@@ -16,7 +16,8 @@ export default function ProductForm() {
   const editing = Boolean(id);
   const { seller, account } = useOutletContext();
   const nav = useNavigate();
-  const fileRef = useRef(null);
+  const cameraRef = useRef(null);
+  const galleryRef = useRef(null);
 
   const [loading, setLoading] = useState(editing);
   const [photos, setPhotos] = useState([]);
@@ -100,6 +101,7 @@ export default function ProductForm() {
       <h1 className="mt-2 font-display text-2xl font-extrabold">{editing ? "Editar producto" : "Cargar un producto"}</h1>
 
       <p className={label}>Fotos <span className="font-normal text-zinc-500">({photos.length}/{MAX_PHOTOS}) · la primera es la portada</span></p>
+      {photos.length === 0 && <p className="mt-0.5 text-[12px] text-zinc-500">Sacá la foto con buena luz, de frente y sobre un fondo liso.</p>}
       <div className="mt-2 grid grid-cols-3 gap-2">
         {photos.map((url, i) => (
           <div key={url} className="relative aspect-square overflow-hidden rounded-xl bg-zinc-100 ring-1 ring-zinc-200">
@@ -113,12 +115,19 @@ export default function ProductForm() {
           <div key={"u" + i} className="flex aspect-square items-center justify-center rounded-xl bg-zinc-100 ring-1 ring-zinc-200"><Loader2 className="animate-spin text-zinc-400" /></div>
         ))}
         {photos.length + uploading < MAX_PHOTOS && (
-          <button type="button" onClick={() => fileRef.current?.click()} className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-zinc-300 text-[12px] font-semibold text-zinc-600">
-            <Camera size={22} /> {photos.length ? "Sumar" : "Sacar o elegir"}
-          </button>
+          <div className="grid aspect-square grid-rows-2 gap-1.5">
+            <button type="button" onClick={() => cameraRef.current?.click()} className="flex items-center justify-center gap-1.5 rounded-xl bg-hpred text-[12px] font-semibold text-white">
+              <Camera size={17} /> Sacar foto
+            </button>
+            <button type="button" onClick={() => galleryRef.current?.click()} className="flex items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-zinc-300 text-[12px] font-semibold text-zinc-600">
+              <Images size={17} /> Galería
+            </button>
+          </div>
         )}
       </div>
-      <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={addPhotos} />
+      {/* capture="environment" abre la cámara trasera directo; la galería permite elegir varias a la vez */}
+      <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={addPhotos} aria-label="Sacar foto con la cámara" />
+      <input ref={galleryRef} type="file" accept="image/*" multiple className="hidden" onChange={addPhotos} aria-label="Elegir fotos de la galería" />
 
       <label className={label} htmlFor="title">¿Qué vendés?</label>
       <input id="title" maxLength={80} value={f.title} onChange={set("title")} placeholder="Ej: Bici rodado 26 con cambios" className={input} />
