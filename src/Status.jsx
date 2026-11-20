@@ -25,7 +25,7 @@ export default function Status() {
         {row("App publicada", true, "✓ OK")}
         {row("Conexión con Supabase", db.state === "checking" ? null : db.state === "ok", db.state === "checking" ? "Revisando…" : db.state === "ok" ? `✓ OK (${db.ms} ms)` : `✗ ${db.msg}`)}
       </ul>
-      <a href="/" className="mt-6 inline-block text-sm font-semibold text-hpred underline">Ir a la app</a>
+      <a href="/" className="mt-6 inline-block text-sm font-semibold text-hpred underline">Ir al inicio</a>
     </main>
   );
 }
