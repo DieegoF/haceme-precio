@@ -26,7 +26,7 @@ export default function ProductForm() {
   const [photos, setPhotos] = useState([]);
   const [uploading, setUploading] = useState(0);
   const [f, setF] = useState({ title: "", price: "", floor: "", autoOn: true, autoPct: 95, condition: isStore ? "Nuevo" : "Usado", category: "", description: "", location: "", shipping: false, shippingNote: "", stock: 1,
-    mode: isStore ? "fijo" : "oferta", compareAt: "", collection: "" });
+    mode: isStore ? "fijo" : "oferta", compareAt: "", collection: "", liquidation: false });
   const [variants, setVariants] = useState({ colors: [], sizes: [], stock: {} });
   const [photoColor, setPhotoColor] = useState({}); // url -> color (vacío = todos los colores)
   const [busy, setBusy] = useState(false);
@@ -45,7 +45,7 @@ export default function ProductForm() {
         autoOn: Boolean(r?.auto_accept_pct), autoPct: r?.auto_accept_pct || 95, condition: data.condition || "Usado",
         category: data.category || "", description: data.description || "", location: data.location || "",
         shipping: data.shipping_enabled, shippingNote: data.shipping_note || "", stock: data.stock,
-        mode: isStore ? "fijo" : data.mode, compareAt: data.compare_at ? moneyInput(data.compare_at) : "", collection: data.collection || "",
+        mode: isStore ? "fijo" : data.mode, compareAt: data.compare_at ? moneyInput(data.compare_at) : "", collection: data.collection || "", liquidation: Boolean(data.liquidation),
       });
       if (data.has_variants) setVariants(fromVariants(data.product_variants || []));
       const pc = {};
@@ -89,6 +89,7 @@ export default function ProductForm() {
   if (!fixed && !floor) problems.push("Poné lo mínimo que aceptás");
   if (!fixed && floor > price) problems.push("Lo mínimo no puede ser más que el precio");
   if (fixed && compareAt && compareAt <= price) problems.push("El precio anterior tiene que ser mayor al actual");
+  if (isStore && f.liquidation && !compareAt) problems.push("En liquidación poné el precio de antes, así se ve cuánto bajó");
 
   const save = async (e) => {
     e.preventDefault();
@@ -101,7 +102,7 @@ export default function ProductForm() {
       list_price: price, photos, stock: isPase ? 1 : Math.max(isStore ? 0 : 1, Number(f.stock) || 0), location: isStore ? null : f.location.trim() || null,
       shipping_enabled: isStore ? false : f.shipping, shipping_note: !isStore && f.shipping ? f.shippingNote.trim() || "A coordinar" : null,
       mode: f.mode, compare_at: fixed && compareAt ? compareAt : "", collection: isStore ? f.collection.trim() || null : null,
-      liquidation: false, color_photos: colorPhotos,
+      liquidation: isStore && f.liquidation, color_photos: colorPhotos,
     };
     const r = fixed ? null : { floor_price: floor, auto_accept_pct: f.autoOn ? f.autoPct : "" };
     const { error } = await supabase.rpc("save_product", { p_id: editing ? id : null, p, r, v: varList });
@@ -170,6 +171,13 @@ export default function ProductForm() {
             <input id="cmp" inputMode="numeric" value={f.compareAt} onChange={(e) => setF((x) => ({ ...x, compareAt: moneyInput(e.target.value) }))} placeholder="$ 22.000" className={input} />
           </div>
           {compareAt > price && price > 0 && <p className="col-span-2 -mt-1 text-[12px] text-zinc-600">Se muestra tachado: <s>{fmt(compareAt)}</s> → <b>{fmt(price)}</b> (−{Math.round((1 - price / compareAt) * 100)}%)</p>}
+          {isStore && (
+            <label className={`col-span-2 flex cursor-pointer items-start gap-3 rounded-2xl p-3 ring-2 ${f.liquidation ? "bg-hpred/5 ring-hpred" : "ring-zinc-200"}`}>
+              <input type="checkbox" checked={f.liquidation} onChange={(e) => setF((x) => ({ ...x, liquidation: e.target.checked }))} className="mt-0.5 h-5 w-5 accent-[#C8102E]" />
+              <span><span className="block text-[14px] font-bold">🔥 Es liquidación</span>
+                <span className="block text-[12px] text-zinc-500">Para rematar stock que no salió. Va a precio fijo con el precio de antes tachado y aparece en la sección «Liquidación» de tu tienda.</span></span>
+            </label>
+          )}
         </div>
       ) : (<>
       <div className="grid grid-cols-2 gap-3">

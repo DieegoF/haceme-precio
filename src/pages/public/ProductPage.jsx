@@ -65,13 +65,14 @@ export default function ProductPage() {
 
       <main className="px-5 pt-4">
         <div className="flex flex-wrap gap-1.5">
+          {p.liquidation && <span className="rounded-full bg-hpred px-2.5 py-0.5 text-[11px] font-bold text-white">🔥 Liquidación</span>}
           {fixed && p.collection && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.collection}</span>}
           {!fixed && p.condition && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.condition}</span>}
           {!fixed && p.category && !store && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.category}</span>}
         </div>
         <h1 className="mt-2 font-display text-[22px] font-extrabold leading-tight">{p.title}</h1>
         <p className="mt-1 text-3xl font-black">{fmt(p.list_price)} {off > 0 && <span className="align-middle text-base font-semibold text-zinc-400 line-through">{fmt(p.compare_at)}</span>} {off > 0 && <span className="align-middle rounded-full bg-hpred px-2 py-0.5 text-[12px] font-bold text-white">-{off}%</span>}</p>
-        {!sold && <p className="text-[13px] text-zinc-600">{fixed ? "Precio fijo · nuevo con etiqueta" : "Precio publicado · podés hacer tu oferta"}</p>}
+        {!sold && <p className="text-[13px] text-zinc-600">{p.liquidation ? "Remate de stock · hasta agotar" : fixed ? "Precio fijo · nuevo con etiqueta" : "Precio publicado · podés hacer tu oferta"}</p>}
         {!sold && (fixed ? <StoreBuy product={p} seller={seller} store={store} color={color} onColor={setColor} /> : <BuyerOffer product={p} seller={seller} />)}
 
         <ul className="mt-4 space-y-2 text-[14px] text-zinc-700">
