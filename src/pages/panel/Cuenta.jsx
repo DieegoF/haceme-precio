@@ -7,7 +7,7 @@ import StoreEditor from "./StoreEditor.jsx";
 import MpConnect from "../../components/MpConnect.jsx";
 
 const PLAN_NAME = { pase: "Una sola cosa", mensual: "Básico", pro: "Pro con IA", tienda: "Tienda" };
-const PLAN_PRICE = { pase: "$5.000 único", mensual: "$10.000/mes", pro: "$30.000/mes", tienda: "$40.000/mes" };
+const PLAN_PRICE = { pase: "$5.000 por publicación", mensual: "$10.000/mes", pro: "$30.000/mes", tienda: "$40.000/mes" };
 const STATUS = { prueba: "Prueba gratis", activa: "Activa", gracia: "Pago pendiente", vencida: "Vencida", suspendida: "Suspendida", cancelada: "Cancelada" };
 const daysLeft = (iso) => Math.max(0, Math.ceil((new Date(iso) - Date.now()) / 86400000));
 
@@ -35,7 +35,12 @@ export default function Cuenta() {
           {account?.status === "prueba" && account.trial_ends_at && (
             <p className="mt-1 text-[13px] text-zinc-300">Te quedan <b className="text-white">{daysLeft(account.trial_ends_at)} días</b> de prueba gratis.</p>
           )}
-          <p className="mt-3 text-[11px] text-zinc-400">El cobro con Mercado Pago se activa en la fase 6.</p>
+          {plan === "pase" && (
+            <p className="mt-1 text-[13px] text-zinc-300">{!account?.free_pass_used_at ? <>Tu <b className="text-white">primera publicación es gratis</b>.</>
+              : account.pass_credits > 0 ? <>Tenés <b className="text-white">{account.pass_credits} {account.pass_credits === 1 ? "pase" : "pases"}</b> para publicar.</>
+              : <>Ya usaste tu publicación gratis. La próxima cuesta $5.000.</>}</p>
+          )}
+          <p className="mt-3 text-[11px] text-zinc-400">El cobro del plan con Mercado Pago llega pronto.</p>
         </section>
 
         <MpConnect />

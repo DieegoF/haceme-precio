@@ -5,9 +5,9 @@ import { LOGO_HORIZ } from "../prototype/brand.js";
 
 // Landing pública (responsive). No depende del prototipo: carga liviana.
 const PLANS = [
-  { k: "pase", e: "🏷️", t: "Vendo una sola cosa", p: "$5.000", per: "pago único", d: "Una publicación por 30 días. Ideal para el sillón o la bici.", f: ["1 publicación", "Ofertas con mínimo oculto", "Link para compartir"], cta: "Empezar" },
-  { k: "mensual", e: "🛍️", t: "Básico", p: "$10.000", per: "/mes", d: "Para el que vende seguido en Marketplace, WhatsApp o Instagram.", f: ["Publicaciones sin límite", "Tu vidriera con todo", "Varias unidades por producto"], cta: "Probar 7 días gratis", star: true },
-  { k: "tienda", e: "🏬", t: "Tienda", p: "$40.000", per: "/mes", d: "Para locales: tu ventana de venta sin armar un e-commerce.", f: ["Talles, colores y stock", "Carrito y pedidos", "Promos, logo y portada"], cta: "Probar 7 días gratis" },
+  { k: "pase", e: "🏷️", t: "Vendo una sola cosa", p: "Gratis", per: "la 1ª vez", d: "Tu primera publicación es gratis. Si después querés vender otra cosa, cada una cuesta $5.000.", f: ["1 publicación activa", "Ofertas con mínimo oculto", "Link para compartir"], cta: "Publicar gratis" },
+  { k: "mensual", e: "🛍️", t: "Básico", p: "$10.000", per: "/mes", d: "Para el que vende seguido en Marketplace, WhatsApp o Instagram.", f: ["Publicaciones sin límite", "Tu vidriera con todo", "Varias unidades por producto"], cta: "Probar 15 días gratis", star: true },
+  { k: "tienda", e: "🏬", t: "Tienda", p: "$40.000", per: "/mes", d: "Para locales: tu ventana de venta sin armar un e-commerce.", f: ["Talles, colores y stock", "Carrito y pedidos", "Promos, logo y portada"], cta: "Probar 15 días gratis" },
   { k: "pro", e: "✨", t: "Pro con IA", p: "$30.000", per: "/mes", d: "Todo lo del Básico, y la IA arma tus publicaciones desde las fotos.", f: ["Todo lo del Básico", "Título y descripción con IA", "Próximamente"], cta: "Anotarme", soon: true },
 ];
 const FAQS = [
@@ -80,7 +80,7 @@ function Hero() {
             <Link to="/ingresar?plan=mensual" className={btnRed}>Empezar gratis</Link>
             <Link to="/demo" className={btnGhost}>Ver cómo funciona</Link>
           </div>
-          <p className="mt-3 text-[13px] text-zinc-500">7 días gratis · sin tarjeta · sin comisión por venta</p>
+          <p className="mt-3 text-[13px] text-zinc-500">15 días gratis · sin tarjeta · sin comisión por venta</p>
         </div>
         <HeroPhone />
       </div>
@@ -300,7 +300,7 @@ function FinalCta() {
     <section className="bg-hpred py-16 text-white lg:py-20">
       <div className={`${wrap} flex flex-col items-start justify-between gap-6 md:flex-row md:items-center`}>
         <div>
-          <h2 className="font-display text-3xl font-black sm:text-4xl">Probalo gratis 7 días</h2>
+          <h2 className="font-display text-3xl font-black sm:text-4xl">Probalo gratis 15 días</h2>
           <p className="mt-2 text-[16px] text-white/85">Cargás tu primer producto en un minuto. Sin tarjeta.</p>
         </div>
         <Link to="/ingresar?plan=mensual" className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-2xl bg-white px-8 text-[17px] font-semibold text-hpred"><ShoppingBag size={18} /> Empezar ahora</Link>
