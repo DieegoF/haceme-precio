@@ -5,6 +5,8 @@ import { supabase } from "../../lib/supabase.js";
 import { uploadPhoto, removePhotos } from "../../lib/photos.js";
 import { fmt, parseMoney, moneyInput } from "../../lib/format.js";
 import { friendlyDbError } from "../../lib/errors.js";
+import VariantBuilder, { toVariants, fromVariants } from "../../components/VariantBuilder.jsx";
+import { COLLECTIONS } from "../../lib/variants.jsx";
 
 const CATEGORIES = ["Tecnología", "Hogar y muebles", "Ropa y accesorios", "Vehículos", "Deportes", "Bebés y niños", "Herramientas", "Otros"];
 const CONDITIONS = ["Nuevo", "Como nuevo", "Usado"];
@@ -15,6 +17,7 @@ export default function ProductForm() {
   const { id } = useParams();
   const editing = Boolean(id);
   const { seller, account } = useOutletContext();
+  const isStore = Boolean(seller.is_store);
   const nav = useNavigate();
   const cameraRef = useRef(null);
   const galleryRef = useRef(null);
@@ -22,7 +25,10 @@ export default function ProductForm() {
   const [loading, setLoading] = useState(editing);
   const [photos, setPhotos] = useState([]);
   const [uploading, setUploading] = useState(0);
-  const [f, setF] = useState({ title: "", price: "", floor: "", autoOn: true, autoPct: 95, condition: "Usado", category: "", description: "", location: "", shipping: false, shippingNote: "", stock: 1 });
+  const [f, setF] = useState({ title: "", price: "", floor: "", autoOn: true, autoPct: 95, condition: isStore ? "Nuevo" : "Usado", category: "", description: "", location: "", shipping: false, shippingNote: "", stock: 1,
+    mode: isStore ? "fijo" : "oferta", compareAt: "", collection: "" });
+  const [variants, setVariants] = useState({ colors: [], sizes: [], stock: {} });
+  const [photoColor, setPhotoColor] = useState({}); // url -> color (vacío = todos los colores)
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e?.target ? (e.target.type === "checkbox" ? e.target.checked : e.target.value) : e }));
@@ -30,7 +36,7 @@ export default function ProductForm() {
   useEffect(() => {
     if (!editing) return;
     (async () => {
-      const { data, error } = await supabase.from("products").select("*, product_rules(floor_price, auto_accept_pct)").eq("id", id).maybeSingle();
+      const { data, error } = await supabase.from("products").select("*, product_rules(floor_price, auto_accept_pct), product_variants(color, size, stock)").eq("id", id).maybeSingle();
       if (error || !data) { setErr("No encontramos ese producto."); setLoading(false); return; }
       const r = Array.isArray(data.product_rules) ? data.product_rules[0] : data.product_rules;
       setPhotos(data.photos || []);
@@ -39,7 +45,12 @@ export default function ProductForm() {
         autoOn: Boolean(r?.auto_accept_pct), autoPct: r?.auto_accept_pct || 95, condition: data.condition || "Usado",
         category: data.category || "", description: data.description || "", location: data.location || "",
         shipping: data.shipping_enabled, shippingNote: data.shipping_note || "", stock: data.stock,
+        mode: data.mode, compareAt: data.compare_at ? moneyInput(data.compare_at) : "", collection: data.collection || "",
       });
+      if (data.has_variants) setVariants(fromVariants(data.product_variants || []));
+      const pc = {};
+      Object.entries(data.color_photos || {}).forEach(([c, urls]) => urls.forEach((u) => { pc[u] = c; }));
+      setPhotoColor(pc);
       setLoading(false);
     })();
   }, [editing, id]);
@@ -48,6 +59,9 @@ export default function ProductForm() {
   const floor = parseMoney(f.floor);
   const autoFrom = Math.round((price * f.autoPct) / 100);
   const isPase = account?.plan === "pase";
+  const fixed = f.mode === "fijo";
+  const compareAt = parseMoney(f.compareAt);
+  const varList = isStore ? toVariants(variants) : null;
 
   const addPhotos = async (e) => {
     const files = [...(e.target.files || [])].slice(0, MAX_PHOTOS - photos.length);
@@ -72,20 +86,25 @@ export default function ProductForm() {
   if (!photos.length) problems.push("Subí al menos una foto");
   if (f.title.trim().length < 3) problems.push("Escribí qué vendés");
   if (!price) problems.push("Poné el precio");
-  if (!floor) problems.push("Poné lo mínimo que aceptás");
-  if (floor > price) problems.push("Lo mínimo no puede ser más que el precio");
+  if (!fixed && !floor) problems.push("Poné lo mínimo que aceptás");
+  if (!fixed && floor > price) problems.push("Lo mínimo no puede ser más que el precio");
+  if (fixed && compareAt && compareAt <= price) problems.push("El precio anterior tiene que ser mayor al actual");
 
   const save = async (e) => {
     e.preventDefault();
     if (problems.length || uploading) return;
     setBusy(true); setErr("");
+    const colorPhotos = {};
+    photos.forEach((u) => { const c = photoColor[u]; if (c && variants.colors.includes(c)) (colorPhotos[c] ||= []).push(u); });
     const p = {
-      title: f.title.trim(), description: f.description.trim() || null, category: f.category || null, condition: f.condition,
-      list_price: price, photos, stock: isPase ? 1 : Math.max(1, Number(f.stock) || 1), location: f.location.trim() || null,
-      shipping_enabled: f.shipping, shipping_note: f.shipping ? f.shippingNote.trim() || "A coordinar" : null, mode: "oferta",
+      title: f.title.trim(), description: f.description.trim() || null, category: isStore ? "Ropa y accesorios" : f.category || null, condition: f.condition,
+      list_price: price, photos, stock: isPase ? 1 : Math.max(isStore ? 0 : 1, Number(f.stock) || 0), location: isStore ? null : f.location.trim() || null,
+      shipping_enabled: isStore ? false : f.shipping, shipping_note: !isStore && f.shipping ? f.shippingNote.trim() || "A coordinar" : null,
+      mode: f.mode, compare_at: fixed && compareAt ? compareAt : "", collection: isStore ? f.collection.trim() || null : null,
+      liquidation: isStore && !fixed, color_photos: colorPhotos,
     };
-    const r = { floor_price: floor, auto_accept_pct: f.autoOn ? f.autoPct : "" };
-    const { error } = await supabase.rpc("save_product", { p_id: editing ? id : null, p, r });
+    const r = fixed ? null : { floor_price: floor, auto_accept_pct: f.autoOn ? f.autoPct : "" };
+    const { error } = await supabase.rpc("save_product", { p_id: editing ? id : null, p, r, v: varList });
     setBusy(false);
     if (error) return setErr(friendlyDbError(error));
     nav("/panel/productos", { replace: true, state: { flash: editing ? "Cambios guardados ✓" : "¡Publicado! Ya podés compartir tu link." } });
@@ -99,6 +118,15 @@ export default function ProductForm() {
     <form onSubmit={save} className="px-5 pb-8 pt-5">
       <button type="button" onClick={() => nav("/panel/productos")} className="flex items-center gap-1 text-[13px] font-semibold text-zinc-500"><ArrowLeft size={15} /> Mis productos</button>
       <h1 className="mt-2 font-display text-2xl font-extrabold">{editing ? "Editar producto" : "Cargar un producto"}</h1>
+      {isStore && (
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          {[["fijo", "Precio fijo", "Nuevo, con talles y colores"], ["oferta", "🔥 Liquidación", "Acepta ofertas con tu mínimo"]].map(([m, t, d]) => (
+            <button type="button" key={m} onClick={() => setF((x) => ({ ...x, mode: m }))} className={`rounded-2xl p-3 text-left ring-2 ${f.mode === m ? "ring-hpred bg-hpred/5" : "ring-zinc-200"}`}>
+              <span className="block text-[14px] font-bold">{t}</span><span className="block text-[11px] text-zinc-500">{d}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <p className={label}>Fotos <span className="font-normal text-zinc-500">({photos.length}/{MAX_PHOTOS}) · la primera es la portada</span></p>
       {photos.length === 0 && <p className="mt-0.5 text-[12px] text-zinc-500">Sacá la foto con buena luz, de frente y sobre un fondo liso.</p>}
@@ -109,6 +137,13 @@ export default function ProductForm() {
             <button type="button" onClick={() => dropPhoto(url)} aria-label="Sacar foto" className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white"><X size={14} /></button>
             {i === 0 ? <span className="absolute bottom-1 left-1 rounded-full bg-hpred px-2 py-0.5 text-[10px] font-bold text-white">Portada</span>
               : <button type="button" onClick={() => makeCover(url)} className="absolute bottom-1 left-1 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold">Hacer portada</button>}
+            {isStore && variants.colors.length > 0 && (
+              <select value={photoColor[url] || ""} onChange={(e) => setPhotoColor((m) => ({ ...m, [url]: e.target.value }))} aria-label="Color de esta foto"
+                className="absolute left-1 top-1 max-w-[70%] rounded-full bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold">
+                <option value="">Todos</option>
+                {variants.colors.map((c) => <option key={c}>{c}</option>)}
+              </select>
+            )}
           </div>
         ))}
         {Array.from({ length: uploading }).map((_, i) => (
@@ -128,10 +163,24 @@ export default function ProductForm() {
       {/* capture="environment" abre la cámara trasera directo; la galería permite elegir varias a la vez */}
       <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={addPhotos} aria-label="Sacar foto con la cámara" />
       <input ref={galleryRef} type="file" accept="image/*" multiple className="hidden" onChange={addPhotos} aria-label="Elegir fotos de la galería" />
+      {isStore && variants.colors.length > 0 && photos.length > 0 && <p className="mt-1.5 text-[11px] text-zinc-500">Arriba de cada foto elegí de qué color es: al elegir un color, tu cliente ve esas fotos.</p>}
 
       <label className={label} htmlFor="title">¿Qué vendés?</label>
-      <input id="title" maxLength={80} value={f.title} onChange={set("title")} placeholder="Ej: Bici rodado 26 con cambios" className={input} />
+      <input id="title" maxLength={80} value={f.title} onChange={set("title")} placeholder={isStore ? "Ej: Remera oversize algodón" : "Ej: Bici rodado 26 con cambios"} className={input} />
 
+      {fixed ? (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={label} htmlFor="price">Precio</label>
+            <input id="price" inputMode="numeric" value={f.price} onChange={(e) => setF((x) => ({ ...x, price: moneyInput(e.target.value) }))} placeholder="$ 18.000" className={input} />
+          </div>
+          <div>
+            <label className={label} htmlFor="cmp">Precio anterior <span className="font-normal text-zinc-500">(opcional)</span></label>
+            <input id="cmp" inputMode="numeric" value={f.compareAt} onChange={(e) => setF((x) => ({ ...x, compareAt: moneyInput(e.target.value) }))} placeholder="$ 22.000" className={input} />
+          </div>
+          {compareAt > price && price > 0 && <p className="col-span-2 -mt-1 text-[12px] text-zinc-600">Se muestra tachado: <s>{fmt(compareAt)}</s> → <b>{fmt(price)}</b> (−{Math.round((1 - price / compareAt) * 100)}%)</p>}
+        </div>
+      ) : (<>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className={label} htmlFor="price">Precio publicado</label>
@@ -160,7 +209,20 @@ export default function ProductForm() {
           </>
         )}
       </div>
+      </>)}
 
+      {isStore && (
+        <>
+          <label className={label} htmlFor="col">Categoría de tu tienda</label>
+          <input id="col" list="collections" maxLength={30} value={f.collection} onChange={set("collection")} placeholder="Ej: Remeras" className={input} />
+          <datalist id="collections">{COLLECTIONS.map((c) => <option key={c} value={c} />)}</datalist>
+          <p className={label}>Talles, colores y stock</p>
+          <div className="mt-2"><VariantBuilder value={variants} onChange={setVariants} /></div>
+          {!varList && <p className="mt-1 text-[12px] text-zinc-500">Si no tiene talles ni colores, dejá todo vacío y poné la cantidad abajo.</p>}
+        </>
+      )}
+
+      {!isStore && <>
       <p className={label}>Estado</p>
       <div className="mt-1 flex gap-2">
         {CONDITIONS.map((c) => (
@@ -173,10 +235,12 @@ export default function ProductForm() {
         <option value="">Elegí una</option>
         {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
       </select>
+      </>}
 
       <label className={label} htmlFor="desc">Descripción <span className="font-normal text-zinc-500">(opcional)</span></label>
-      <textarea id="desc" rows={3} maxLength={2000} value={f.description} onChange={set("description")} placeholder="Medidas, detalles, por qué lo vendés…" className={input} />
+      <textarea id="desc" rows={3} maxLength={2000} value={f.description} onChange={set("description")} placeholder={isStore ? "Tela, calce, medidas, cuidados…" : "Medidas, detalles, por qué lo vendés…"} className={input} />
 
+      {!isStore && <>
       <label className={label} htmlFor="loc">Zona de entrega</label>
       <input id="loc" maxLength={80} value={f.location} onChange={set("location")} placeholder="Ej: Caballito, CABA" className={input} />
 
@@ -185,8 +249,9 @@ export default function ProductForm() {
         <input type="checkbox" checked={f.shipping} onChange={set("shipping")} className="h-5 w-5 accent-hpred" />
       </label>
       {f.shipping && <input maxLength={120} value={f.shippingNote} onChange={set("shippingNote")} placeholder="Ej: Moto en CABA, correo al resto" className={input} />}
+      </>}
 
-      {!isPase && (
+      {!isPase && !varList && (
         <>
           <label className={label} htmlFor="stock">¿Cuántos tenés?</label>
           <input id="stock" type="number" min={1} max={999} value={f.stock} onChange={set("stock")} className={input + " w-28"} />

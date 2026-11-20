@@ -5,6 +5,8 @@ import { getProduct, getSellerBySlug } from "../../lib/publicData.js";
 import { fmt } from "../../lib/format.js";
 import Gallery from "../../components/Gallery.jsx";
 import BuyerOffer from "../../components/BuyerOffer.jsx";
+import StoreBuy from "../../components/StoreBuy.jsx";
+import { StoreAvatar } from "../../components/StoreBrand.jsx";
 import { Phone } from "../../components/Brand.jsx";
 import { LOGO_HORIZ } from "../../prototype/brand.js";
 
@@ -12,6 +14,7 @@ export default function ProductPage() {
   const { sellerSlug, productSlug } = useParams();
   const [state, setState] = useState({ loading: true });
   const [shared, setShared] = useState("");
+  const [color, setColor] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -48,28 +51,43 @@ export default function ProductPage() {
   );
 
   const sold = p.status === "vendida";
+  const fixed = p.mode === "fijo";
+  const store = seller.store;
+  const gallery = color && p.color_photos?.[color]?.length ? p.color_photos[color] : p.photos;
+  const off = fixed && p.compare_at > p.list_price ? Math.round((1 - p.list_price / p.compare_at) * 100) : 0;
   return (
     <Phone className="relative pb-28">
       <TopBar right={<button onClick={share} className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-[12px] font-semibold"><Share2 size={13} /> {shared || "Compartir"}</button>} />
       <div className="relative">
-        <Gallery photos={p.photos} alt={p.title} />
+        <Gallery key={gallery.join("|")} photos={gallery} alt={p.title} />
         {sold && <div className="absolute inset-0 flex items-center justify-center bg-white/60"><span className="rotate-[-8deg] rounded-xl bg-ink px-5 py-2 font-display text-2xl font-black text-white">VENDIDO</span></div>}
       </div>
 
       <main className="px-5 pt-4">
         <div className="flex flex-wrap gap-1.5">
-          {p.condition && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.condition}</span>}
-          {p.category && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.category}</span>}
+          {p.liquidation && <span className="rounded-full bg-hpred px-2.5 py-0.5 text-[11px] font-bold text-white">🔥 Liquidación · haceme precio</span>}
+          {fixed && p.collection && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.collection}</span>}
+          {!fixed && p.condition && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.condition}</span>}
+          {!fixed && p.category && !store && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.category}</span>}
         </div>
         <h1 className="mt-2 font-display text-[22px] font-extrabold leading-tight">{p.title}</h1>
-        <p className="mt-1 text-3xl font-black">{fmt(p.list_price)}</p>
-        {!sold && <p className="text-[13px] text-zinc-600">Precio publicado · podés hacer tu oferta</p>}
-        {!sold && <BuyerOffer product={p} seller={seller} />}
+        <p className="mt-1 text-3xl font-black">{fmt(p.list_price)} {off > 0 && <span className="align-middle text-base font-semibold text-zinc-400 line-through">{fmt(p.compare_at)}</span>} {off > 0 && <span className="align-middle rounded-full bg-hpred px-2 py-0.5 text-[12px] font-bold text-white">-{off}%</span>}</p>
+        {!sold && <p className="text-[13px] text-zinc-600">{fixed ? "Precio fijo · nuevo con etiqueta" : "Precio publicado · podés hacer tu oferta"}</p>}
+        {!sold && (fixed ? <StoreBuy product={p} seller={seller} store={store} color={color} onColor={setColor} /> : <BuyerOffer product={p} seller={seller} />)}
 
         <ul className="mt-4 space-y-2 text-[14px] text-zinc-700">
-          {p.location && <li className="flex gap-2"><MapPin size={17} className="mt-0.5 shrink-0 text-zinc-500" /> Entrega en {p.location}</li>}
-          <li className="flex gap-2"><Truck size={17} className="mt-0.5 shrink-0 text-zinc-500" /> {p.shipping_enabled ? `Hace envíos: ${p.shipping_note || "a coordinar"}` : "Sin envío: se retira en persona"}</li>
-          {p.stock > 1 && !sold && <li className="flex gap-2"><Package size={17} className="mt-0.5 shrink-0 text-zinc-500" /> Hay {p.stock} disponibles</li>}
+          {store ? (
+            <>
+              {store.pickup && <li className="flex gap-2"><MapPin size={17} className="mt-0.5 shrink-0 text-zinc-500" /> Retiro en {store.address}{store.hours ? ` · ${store.hours}` : ""}</li>}
+              {store.shipping_enabled && <li className="flex gap-2"><Truck size={17} className="mt-0.5 shrink-0 text-zinc-500" /> Envíos: {store.shipping_note || "a coordinar"}</li>}
+            </>
+          ) : (
+            <>
+              {p.location && <li className="flex gap-2"><MapPin size={17} className="mt-0.5 shrink-0 text-zinc-500" /> Entrega en {p.location}</li>}
+              <li className="flex gap-2"><Truck size={17} className="mt-0.5 shrink-0 text-zinc-500" /> {p.shipping_enabled ? `Hace envíos: ${p.shipping_note || "a coordinar"}` : "Sin envío: se retira en persona"}</li>
+            </>
+          )}
+          {p.stock > 1 && !sold && !fixed && <li className="flex gap-2"><Package size={17} className="mt-0.5 shrink-0 text-zinc-500" /> Hay {p.stock} disponibles</li>}
         </ul>
 
         {p.description && (
@@ -80,7 +98,7 @@ export default function ProductPage() {
         )}
 
         <Link to={`/${seller.slug}`} className="mt-5 flex items-center gap-3 rounded-2xl bg-white p-3 ring-1 ring-zinc-200">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-ink font-display text-lg font-black text-white">{seller.name.charAt(0).toUpperCase()}</span>
+          {store ? <StoreAvatar name={seller.name} logo={store.logo_url} color={store.color} size={44} /> : <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-ink font-display text-lg font-black text-white">{seller.name.charAt(0).toUpperCase()}</span>}
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1 font-semibold">{seller.name} {seller.phone_verified && <BadgeCheck size={15} className="text-sky-600" aria-label="Teléfono verificado" />}</span>
             <span className="block text-[12px] text-zinc-500">Vende en Haceme Precio desde {new Date(seller.created_at).toLocaleDateString("es-AR", { month: "long", year: "numeric" })}</span>
