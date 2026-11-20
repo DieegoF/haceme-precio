@@ -10,6 +10,7 @@ import Productos from "./pages/panel/Productos.jsx";
 import ProductForm from "./pages/panel/ProductForm.jsx";
 import Cuenta from "./pages/panel/Cuenta.jsx";
 import Inicio from "./pages/panel/Inicio.jsx";
+import MpConectado from "./pages/panel/MpConectado.jsx";
 import OrderPage from "./pages/public/OrderPage.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import ProductPage from "./pages/public/ProductPage.jsx";
@@ -32,6 +33,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="cargar" element={<ProductForm />} />
             <Route path="producto/:id" element={<ProductForm />} />
             <Route path="cuenta" element={<Cuenta />} />
+            <Route path="mp/conectado" element={<MpConectado />} />
             <Route path="*" element={<Navigate to="/panel" replace />} />
           </Route>
           <Route path="/demo" element={<Demo />} />
