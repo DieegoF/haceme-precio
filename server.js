@@ -13,7 +13,7 @@ const DIST = path.join(__dirname, "dist");
 const INDEX = fs.readFileSync(path.join(DIST, "index.html"), "utf8");
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY; // clave pública: solo lee lo que RLS deja ver a cualquiera
-const RESERVED = new Set(["panel", "ingresar", "demo", "estado", "assets", "admin", "api", "ayuda", "terminos", "privacidad", "planes", "precios", "login", "app", "www", "hacemeprecio", "haceme-precio", "soporte", "contacto", "baja", "arrepentimiento"]);
+const RESERVED = new Set(["panel", "ingresar", "demo", "estado", "assets", "admin", "api", "ayuda", "terminos", "privacidad", "planes", "precios", "login", "app", "www", "hacemeprecio", "haceme-precio", "soporte", "contacto", "baja", "arrepentimiento", "pedido", "pedidos"]);
 const SLUG = /^[a-z0-9-]{3,80}$/;
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
