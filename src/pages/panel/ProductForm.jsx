@@ -212,7 +212,7 @@ export default function ProductForm() {
 
       {isStore && (
         <>
-          <p className={label}>Categoría de tu tienda</p>
+          <p className={label}>Categoría del producto</p>
           <CategoryPicker sellerId={seller.id} value={f.collection} onChange={(c) => setF((x) => ({ ...x, collection: c }))} />
           <p className={label}>Talles, colores y stock</p>
           <div className="mt-2"><VariantBuilder value={variants} onChange={setVariants} /></div>
