@@ -6,6 +6,8 @@ import { fmt } from "../../lib/format.js";
 import Gallery from "../../components/Gallery.jsx";
 import BuyerOffer from "../../components/BuyerOffer.jsx";
 import StoreBuy from "../../components/StoreBuy.jsx";
+import { PromoBanner, FreeShipNote } from "../../components/StoreExtras.jsx";
+import { priceFor, offPct, trackVisit } from "../../lib/promo.js";
 import { StoreAvatar } from "../../components/StoreBrand.jsx";
 import { Phone } from "../../components/Brand.jsx";
 import { LOGO_HORIZ } from "../../prototype/brand.js";
@@ -24,6 +26,7 @@ export default function ProductPage() {
       if (!alive) return;
       setState({ loading: false, seller, product });
       if (product) document.title = `${product.title} · ${fmt(product.list_price)}`;
+      if (seller?.store) trackVisit(seller.id);
     })();
     return () => { alive = false; };
   }, [sellerSlug, productSlug]);
@@ -54,7 +57,8 @@ export default function ProductPage() {
   const fixed = p.mode === "fijo" || Boolean(seller.store); // la tienda nunca recibe ofertas
   const store = seller.store;
   const gallery = color && p.color_photos?.[color]?.length ? p.color_photos[color] : p.photos;
-  const off = fixed && p.compare_at > p.list_price ? Math.round((1 - p.list_price / p.compare_at) * 100) : 0;
+  const pr = fixed ? priceFor(p, store) : { price: p.list_price, was: null, promo: false };
+  const off = offPct(pr.price, pr.was);
   return (
     <Phone className="relative pb-28">
       <TopBar right={<button onClick={share} className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-[12px] font-semibold"><Share2 size={13} /> {shared || "Compartir"}</button>} />
@@ -71,9 +75,10 @@ export default function ProductPage() {
           {!fixed && p.category && !store && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.category}</span>}
         </div>
         <h1 className="mt-2 font-display text-[22px] font-extrabold leading-tight">{p.title}</h1>
-        <p className="mt-1 text-3xl font-black">{fmt(p.list_price)} {off > 0 && <span className="align-middle text-base font-semibold text-zinc-400 line-through">{fmt(p.compare_at)}</span>} {off > 0 && <span className="align-middle rounded-full bg-hpred px-2 py-0.5 text-[12px] font-bold text-white">-{off}%</span>}</p>
+        <p className="mt-1 text-3xl font-black">{fmt(pr.price)} {off > 0 && <span className="align-middle text-base font-semibold text-zinc-400 line-through">{fmt(pr.was)}</span>} {off > 0 && <span className="align-middle rounded-full bg-hpred px-2 py-0.5 text-[12px] font-bold text-white">-{off}%</span>}</p>
         {!sold && <p className="text-[13px] text-zinc-600">{p.liquidation ? "Remate de stock · hasta agotar" : fixed ? "Precio fijo · nuevo con etiqueta" : "Precio publicado · podés hacer tu oferta"}</p>}
-        {!sold && (fixed ? <StoreBuy product={p} seller={seller} store={store} color={color} onColor={setColor} /> : <BuyerOffer product={p} seller={seller} />)}
+        {fixed && store && !sold && <><PromoBanner store={store} className="mt-3" /><FreeShipNote store={store} className="mt-2" /></>}
+        {!sold && (fixed ? <StoreBuy product={p} seller={seller} store={store} price={pr.price} color={color} onColor={setColor} /> : <BuyerOffer product={p} seller={seller} />)}
 
         <ul className="mt-4 space-y-2 text-[14px] text-zinc-700">
           {store ? (

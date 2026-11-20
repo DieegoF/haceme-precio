@@ -9,6 +9,8 @@ import { Phone } from "../../components/Brand.jsx";
 import { LOGO_HORIZ } from "../../prototype/brand.js";
 import NotFound from "../NotFound.jsx";
 import { CartBar } from "../../components/CartSheet.jsx";
+import { PromoBanner, FreeShipNote, StoreFaq } from "../../components/StoreExtras.jsx";
+import { priceFor, offPct, trackVisit } from "../../lib/promo.js";
 
 // Vidriera del vendedor: todo lo que tiene publicado, en un solo link.
 export default function SellerPage() {
@@ -25,6 +27,7 @@ export default function SellerPage() {
       if (!alive) return;
       setState({ loading: false, seller, products });
       if (seller) document.title = `${seller.name} · Haceme Precio`;
+      if (seller?.store) trackVisit(seller.id);
     })();
     return () => { alive = false; };
   }, [sellerSlug]);
@@ -76,7 +79,7 @@ export default function SellerPage() {
           </div>
         )}
         <ul className="mt-4 grid grid-cols-2 gap-3 px-4">
-          {shown.map((p) => (
+          {shown.map((p) => { const pr = priceFor(p, seller.store); const off = offPct(pr.price, pr.was); return (
             <li key={p.id}>
               <Link to={`/${seller.slug}/${p.slug}`} className="block overflow-hidden rounded-2xl bg-white ring-1 ring-zinc-200">
                 <div className="relative aspect-square bg-zinc-100">
@@ -84,18 +87,19 @@ export default function SellerPage() {
                   {p.status === "vendida" ? <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">Vendido</span>
                     : p.mode === "fijo" && p.stock <= 0 ? <span className="absolute left-2 top-2 rounded-full bg-zinc-700 px-2 py-0.5 text-[10px] font-bold text-white">Sin stock</span>
                     : p.liquidation ? <span className="absolute left-2 top-2 rounded-full bg-hpred px-2 py-0.5 text-[10px] font-bold text-white">🔥 Liquidación</span>
-                    : p.compare_at > p.list_price ? <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">-{Math.round((1 - p.list_price / p.compare_at) * 100)}%</span> : null}
+                    : off > 0 ? <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold text-white ${pr.promo ? "bg-hpred" : "bg-ink"}`}>-{off}%</span> : null}
                 </div>
                 <div className="p-2.5">
                   <p className="line-clamp-2 text-[13px] font-medium leading-snug">{p.title}</p>
-                  <p className="mt-1 text-[15px] font-extrabold">{fmt(p.list_price)} {p.compare_at > p.list_price && <span className="text-[12px] font-medium text-zinc-400 line-through">{fmt(p.compare_at)}</span>}</p>
+                  <p className="mt-1 text-[15px] font-extrabold">{fmt(pr.price)} {pr.was && <span className="text-[12px] font-medium text-zinc-400 line-through">{fmt(pr.was)}</span>}</p>
                 </div>
               </Link>
             </li>
-          ))}
+          ); })}
         </ul>
         </>
       )}
+      {seller.store && <StoreFaq store={seller.store} />}
       {seller.store && <CartBar seller={seller} store={seller.store} />}
     </Phone>
   );
@@ -114,6 +118,8 @@ function StoreHeader({ seller, store }) {
         {store.tagline && <p className="text-[14px] text-zinc-600">{store.tagline}</p>}
         <p className="mt-2 flex items-start gap-1.5 text-[13px] text-zinc-500"><MapPin size={14} className="mt-0.5 shrink-0" /> {store.address}{store.hours ? ` · ${store.hours}` : ""}</p>
         <p className="mt-1 flex items-start gap-1.5 text-[13px] text-zinc-500"><Truck size={14} className="mt-0.5 shrink-0" /> {[store.pickup && "Retiro en el local", store.shipping_enabled && `Envíos: ${store.shipping_note || "a coordinar"}`].filter(Boolean).join(" · ")}</p>
+        <FreeShipNote store={store} className="mt-1" />
+        <PromoBanner store={store} className="mt-3" />
         {store.whatsapp && (
           <a href={waLink(store.whatsapp, `¡Hola ${seller.name}! Vi tu tienda en Haceme Precio 🙂`)} target="_blank" rel="noreferrer"
             style={{ backgroundColor: store.color }} className="mt-3 flex min-h-[46px] items-center justify-center gap-1.5 rounded-2xl text-[14px] font-semibold text-white">

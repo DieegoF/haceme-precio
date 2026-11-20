@@ -3,7 +3,7 @@ import { supabase } from "./supabase.js";
 // Lecturas públicas (sin sesión). RLS solo deja ver vendedores con perfil y productos activos o vendidos.
 export async function getSellerBySlug(slug) {
   const { data } = await supabase.from("sellers")
-    .select("id, name, slug, is_store, phone_verified, created_at, stores(tagline, address, hours, whatsapp, logo_url, banner_url, color, pickup, shipping_enabled, shipping_note, ready)")
+    .select("id, name, slug, is_store, phone_verified, created_at, stores(tagline, address, hours, whatsapp, logo_url, banner_url, color, pickup, shipping_enabled, shipping_note, free_ship_from, promo, faq, ready)")
     .eq("slug", slug).maybeSingle();
   if (!data) return null;
   const store = Array.isArray(data.stores) ? data.stores[0] : data.stores;

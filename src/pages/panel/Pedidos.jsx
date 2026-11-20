@@ -5,20 +5,22 @@ import { supabase } from "../../lib/supabase.js";
 import { sellerOrderAction, orderError, ORDER_STATUS } from "../../lib/cart.js";
 import { useNow, left, waLink } from "../../lib/offers.js";
 import { fmt } from "../../lib/format.js";
+import Resumen from "./Resumen.jsx";
 
 // Pedidos de la tienda: nuevos (stock reservado 24 h), confirmados y el historial.
 export default function Pedidos() {
   const { seller } = useOutletContext();
   const [orders, setOrders] = useState(null);
   const [err, setErr] = useState("");
+  const [tick, setTick] = useState(0);
   const now = useNow(30000);
 
   const load = async () => {
     const { data, error } = await supabase.from("orders")
-      .select("id, code, status, buyer_name, buyer_contact, delivery, address, note, total, expires_at, created_at, cancelled_by, order_items(title, photo, color, size, qty, unit_price)")
+      .select("id, code, status, buyer_name, buyer_contact, delivery, address, note, total, free_shipping, expires_at, created_at, cancelled_by, order_items(title, photo, color, size, qty, unit_price)")
       .order("created_at", { ascending: false }).limit(100);
     if (error) setErr("No pudimos cargar tus pedidos. Recargá la página.");
-    else { setErr(""); setOrders(data); }
+    else { setErr(""); setOrders(data); setTick((t) => t + 1); }
   };
   useEffect(() => { load(); const t = setInterval(load, 15000); return () => clearInterval(t); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -29,7 +31,9 @@ export default function Pedidos() {
 
   return (
     <main className="px-5 pb-8 pt-5">
-      <h1 className="font-display text-2xl font-extrabold">Pedidos</h1>
+      <h1 className="font-display text-2xl font-extrabold">Tu tienda</h1>
+      <Resumen refreshKey={Math.floor(tick / 4)} />
+      <h2 className="mt-8 font-display text-xl font-extrabold">Pedidos</h2>
       {err && <p className="mt-2 text-sm font-semibold text-hpred">{err}</p>}
       {!orders.length && (
         <div className="mt-6 rounded-2xl bg-zinc-50 p-5 text-sm text-zinc-600 ring-1 ring-zinc-200">
@@ -92,7 +96,7 @@ function OrderCard({ o, seller, now, onDone, compact }) {
               </li>
             ))}
           </ul>
-          <p className="mt-3 flex gap-1.5 text-[13px] text-zinc-600">{o.delivery === "envio" ? <><Truck size={15} className="mt-0.5 shrink-0" /> Envío a {o.address}</> : <><Store size={15} className="mt-0.5 shrink-0" /> Retira en el local</>}</p>
+          <p className="mt-3 flex gap-1.5 text-[13px] text-zinc-600">{o.delivery === "envio" ? <><Truck size={15} className="mt-0.5 shrink-0" /> Envío{o.free_shipping ? <b className="text-emerald-700">&nbsp;gratis</b> : ""} a {o.address}</> : <><Store size={15} className="mt-0.5 shrink-0" /> Retira en el local</>}</p>
           {o.note && <p className="mt-1 text-[13px] text-zinc-600">💬 {o.note}</p>}
         </>
       )}

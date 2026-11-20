@@ -91,7 +91,7 @@ export default function OrderPage() {
           <li className="flex justify-between p-3 text-[15px]"><span>Total</span><b>{fmt(o.total)}</b></li>
         </ul>
         <p className="mt-3 flex gap-2 text-[13px] text-zinc-600">
-          {o.delivery === "envio" ? <><Truck size={16} className="shrink-0" /> Envío a {o.address}{s.shipping_note ? ` · ${s.shipping_note}` : ""}</>
+          {o.delivery === "envio" ? <><Truck size={16} className="shrink-0" /> Envío {o.free_shipping ? <b className="text-emerald-700">gratis</b> : ""} a {o.address}{!o.free_shipping && s.shipping_note ? ` · ${s.shipping_note}` : ""}</>
             : <><Store size={16} className="shrink-0" /> Retiro en {s.address || "el local"}{s.hours ? ` · ${s.hours}` : ""}</>}
         </p>
         <p className="mt-4 rounded-2xl bg-amber-50 p-3 text-[12px] text-amber-900 ring-1 ring-amber-200">Pagale solo a la cuenta que te indique el local y guardá el comprobante.</p>
