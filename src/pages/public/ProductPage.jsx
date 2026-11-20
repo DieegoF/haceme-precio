@@ -7,7 +7,7 @@ import Gallery from "../../components/Gallery.jsx";
 import BuyerOffer from "../../components/BuyerOffer.jsx";
 import StoreBuy from "../../components/StoreBuy.jsx";
 import { PromoBanner, FreeShipNote } from "../../components/StoreExtras.jsx";
-import { priceFor, offPct, trackVisit } from "../../lib/promo.js";
+import { priceFor, offPct, trackVisit, activePromo, inScope } from "../../lib/promo.js";
 import { StoreAvatar } from "../../components/StoreBrand.jsx";
 import { Phone } from "../../components/Brand.jsx";
 import { LOGO_HORIZ } from "../../prototype/brand.js";
@@ -77,7 +77,7 @@ export default function ProductPage() {
         <h1 className="mt-2 font-display text-[22px] font-extrabold leading-tight">{p.title}</h1>
         <p className="mt-1 text-3xl font-black">{fmt(pr.price)} {off > 0 && <span className="align-middle text-base font-semibold text-zinc-400 line-through">{fmt(pr.was)}</span>} {off > 0 && <span className="align-middle rounded-full bg-hpred px-2 py-0.5 text-[12px] font-bold text-white">-{off}%</span>}</p>
         {!sold && <p className="text-[13px] text-zinc-600">{p.liquidation ? "Remate de stock · hasta agotar" : fixed ? "Precio fijo · nuevo con etiqueta" : "Precio publicado · podés hacer tu oferta"}</p>}
-        {fixed && store && !sold && <><PromoBanner store={store} className="mt-3" /><FreeShipNote store={store} className="mt-2" /></>}
+        {fixed && store && !sold && <>{(() => { const pm = activePromo(store); return pm && !p.liquidation && inScope(p, pm) ? <PromoBanner store={store} className="mt-3" /> : null; })()}<FreeShipNote store={store} className="mt-2" /></>}
         {!sold && (fixed ? <StoreBuy product={p} seller={seller} store={store} price={pr.price} color={color} onColor={setColor} /> : <BuyerOffer product={p} seller={seller} />)}
 
         <ul className="mt-4 space-y-2 text-[14px] text-zinc-700">

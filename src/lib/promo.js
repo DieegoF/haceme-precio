@@ -6,8 +6,12 @@ export function activePromo(store, now = Date.now()) {
   if (!p?.text || !p.ends_at || new Date(p.ends_at) <= now) return null;
   return { ...p, pct: p.pct ? Number(p.pct) : null, scope: p.scope || "Todo" };
 }
+// Igual que en el servidor: sin mayúsculas, acentos ni espacios de más.
+export const normText = (t) => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+export const inScope = (product, promo) => normText(promo?.scope) === "todo" || normText(promo?.scope) === normText(product.collection);
+// La liquidación nunca suma la promo: mantiene su precio de remate.
 export function promoApplies(product, promo) {
-  return Boolean(promo?.pct && !product.liquidation && (promo.scope === "Todo" || promo.scope === product.collection));
+  return Boolean(promo?.pct && !product.liquidation && inScope(product, promo));
 }
 // Precio que paga el cliente y el precio «de antes» para mostrar tachado.
 export function priceFor(product, store, now = Date.now()) {
