@@ -5,6 +5,7 @@ export function friendlyDbError(error) {
   if (m.includes("LIMITE_PASE")) return "Con el pase tenés una sola publicación activa. Pausá la otra o pasate al plan Básico.";
   if (m.includes("SIN_PERFIL")) return "Completá tu nombre y tu link antes de publicar.";
   if (m.includes("mínimo no puede ser mayor")) return "Lo mínimo que aceptás no puede ser más que el precio publicado.";
+  if (m.includes("SOLO_PRECIO_FIJO")) return "En la tienda los productos van a precio fijo.";
   if (m.includes("SOLO_TIENDA")) return "El precio fijo con talles y colores es del plan Tienda.";
   if (m.includes("FALTA_MINIMO")) return "Poné lo mínimo que aceptás.";
   if (error?.code === "23505") return "Ya existe algo con ese nombre. Probá con otro.";

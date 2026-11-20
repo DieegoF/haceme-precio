@@ -32,8 +32,10 @@ export default function SellerPage() {
   if (!state.seller) return <NotFound />;
   const { seller, products } = state;
   const active = products.filter((p) => p.status === "activa");
-  const collections = ["Todo", ...new Set(products.map((p) => p.collection).filter(Boolean))];
-  const shown = col === "Todo" ? products : products.filter((p) => p.collection === col);
+  const LIQ = "🔥 Liquidación";
+  const hasLiq = products.some((p) => p.liquidation && p.status === "activa");
+  const collections = ["Todo", ...(hasLiq ? [LIQ] : []), ...new Set(products.map((p) => p.collection).filter(Boolean))];
+  const shown = col === "Todo" ? products : col === LIQ ? products.filter((p) => p.liquidation) : products.filter((p) => p.collection === col);
 
   const share = async () => {
     try {
@@ -64,7 +66,7 @@ export default function SellerPage() {
         <p className="px-6 py-16 text-center text-sm text-zinc-500">Todavía no hay publicaciones. ¡Volvé pronto!</p>
       ) : (
         <>
-        {seller.store && collections.length > 2 && (
+        {seller.store && collections.length > 1 && (hasLiq || collections.length > 2) && (
           <div className="mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
             {collections.map((c) => (
               <button key={c} onClick={() => setCol(c)} style={col === c ? { backgroundColor: seller.store.color } : undefined}
@@ -80,7 +82,7 @@ export default function SellerPage() {
                   <img src={p.photos?.[0]} alt={p.title} loading="lazy" className={`h-full w-full object-cover ${p.status === "vendida" ? "opacity-50 grayscale" : ""}`} />
                   {p.status === "vendida" ? <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">Vendido</span>
                     : p.mode === "fijo" && p.stock <= 0 ? <span className="absolute left-2 top-2 rounded-full bg-zinc-700 px-2 py-0.5 text-[10px] font-bold text-white">Sin stock</span>
-                    : p.liquidation ? <span className="absolute left-2 top-2 rounded-full bg-hpred px-2 py-0.5 text-[10px] font-bold text-white">🔥 Haceme precio</span>
+                    : p.liquidation ? <span className="absolute left-2 top-2 rounded-full bg-hpred px-2 py-0.5 text-[10px] font-bold text-white">🔥 Liquidación</span>
                     : p.compare_at > p.list_price ? <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">-{Math.round((1 - p.list_price / p.compare_at) * 100)}%</span> : null}
                 </div>
                 <div className="p-2.5">

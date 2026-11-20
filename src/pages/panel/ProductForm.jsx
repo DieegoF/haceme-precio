@@ -26,7 +26,7 @@ export default function ProductForm() {
   const [photos, setPhotos] = useState([]);
   const [uploading, setUploading] = useState(0);
   const [f, setF] = useState({ title: "", price: "", floor: "", autoOn: true, autoPct: 95, condition: isStore ? "Nuevo" : "Usado", category: "", description: "", location: "", shipping: false, shippingNote: "", stock: 1,
-    mode: isStore ? "fijo" : "oferta", compareAt: "", collection: "" });
+    mode: isStore ? "fijo" : "oferta", compareAt: "", collection: "", liquidation: false });
   const [variants, setVariants] = useState({ colors: [], sizes: [], stock: {} });
   const [photoColor, setPhotoColor] = useState({}); // url -> color (vacío = todos los colores)
   const [busy, setBusy] = useState(false);
@@ -45,7 +45,7 @@ export default function ProductForm() {
         autoOn: Boolean(r?.auto_accept_pct), autoPct: r?.auto_accept_pct || 95, condition: data.condition || "Usado",
         category: data.category || "", description: data.description || "", location: data.location || "",
         shipping: data.shipping_enabled, shippingNote: data.shipping_note || "", stock: data.stock,
-        mode: data.mode, compareAt: data.compare_at ? moneyInput(data.compare_at) : "", collection: data.collection || "",
+        mode: isStore ? "fijo" : data.mode, compareAt: data.compare_at ? moneyInput(data.compare_at) : "", collection: data.collection || "", liquidation: Boolean(data.liquidation),
       });
       if (data.has_variants) setVariants(fromVariants(data.product_variants || []));
       const pc = {};
@@ -89,6 +89,7 @@ export default function ProductForm() {
   if (!fixed && !floor) problems.push("Poné lo mínimo que aceptás");
   if (!fixed && floor > price) problems.push("Lo mínimo no puede ser más que el precio");
   if (fixed && compareAt && compareAt <= price) problems.push("El precio anterior tiene que ser mayor al actual");
+  if (isStore && f.liquidation && !compareAt) problems.push("En liquidación poné el precio de antes, así se ve cuánto bajó");
 
   const save = async (e) => {
     e.preventDefault();
@@ -101,7 +102,7 @@ export default function ProductForm() {
       list_price: price, photos, stock: isPase ? 1 : Math.max(isStore ? 0 : 1, Number(f.stock) || 0), location: isStore ? null : f.location.trim() || null,
       shipping_enabled: isStore ? false : f.shipping, shipping_note: !isStore && f.shipping ? f.shippingNote.trim() || "A coordinar" : null,
       mode: f.mode, compare_at: fixed && compareAt ? compareAt : "", collection: isStore ? f.collection.trim() || null : null,
-      liquidation: isStore && !fixed, color_photos: colorPhotos,
+      liquidation: isStore && f.liquidation, color_photos: colorPhotos,
     };
     const r = fixed ? null : { floor_price: floor, auto_accept_pct: f.autoOn ? f.autoPct : "" };
     const { error } = await supabase.rpc("save_product", { p_id: editing ? id : null, p, r, v: varList });
@@ -118,15 +119,6 @@ export default function ProductForm() {
     <form onSubmit={save} className="px-5 pb-8 pt-5">
       <button type="button" onClick={() => nav("/panel/productos")} className="flex items-center gap-1 text-[13px] font-semibold text-zinc-500"><ArrowLeft size={15} /> Mis productos</button>
       <h1 className="mt-2 font-display text-2xl font-extrabold">{editing ? "Editar producto" : "Cargar un producto"}</h1>
-      {isStore && (
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          {[["fijo", "Precio fijo", "Nuevo, con talles y colores"], ["oferta", "🔥 Liquidación", "Acepta ofertas con tu mínimo"]].map(([m, t, d]) => (
-            <button type="button" key={m} onClick={() => setF((x) => ({ ...x, mode: m }))} className={`rounded-2xl p-3 text-left ring-2 ${f.mode === m ? "ring-hpred bg-hpred/5" : "ring-zinc-200"}`}>
-              <span className="block text-[14px] font-bold">{t}</span><span className="block text-[11px] text-zinc-500">{d}</span>
-            </button>
-          ))}
-        </div>
-      )}
 
       <p className={label}>Fotos <span className="font-normal text-zinc-500">({photos.length}/{MAX_PHOTOS}) · la primera es la portada</span></p>
       {photos.length === 0 && <p className="mt-0.5 text-[12px] text-zinc-500">Sacá la foto con buena luz, de frente y sobre un fondo liso.</p>}
@@ -179,6 +171,13 @@ export default function ProductForm() {
             <input id="cmp" inputMode="numeric" value={f.compareAt} onChange={(e) => setF((x) => ({ ...x, compareAt: moneyInput(e.target.value) }))} placeholder="$ 22.000" className={input} />
           </div>
           {compareAt > price && price > 0 && <p className="col-span-2 -mt-1 text-[12px] text-zinc-600">Se muestra tachado: <s>{fmt(compareAt)}</s> → <b>{fmt(price)}</b> (−{Math.round((1 - price / compareAt) * 100)}%)</p>}
+          {isStore && (
+            <label className={`col-span-2 flex cursor-pointer items-start gap-3 rounded-2xl p-3 ring-2 ${f.liquidation ? "bg-hpred/5 ring-hpred" : "ring-zinc-200"}`}>
+              <input type="checkbox" checked={f.liquidation} onChange={(e) => setF((x) => ({ ...x, liquidation: e.target.checked }))} className="mt-0.5 h-5 w-5 accent-[#C8102E]" />
+              <span><span className="block text-[14px] font-bold">🔥 Es liquidación</span>
+                <span className="block text-[12px] text-zinc-500">Para rematar stock que no salió. Va a precio fijo con el precio de antes tachado y aparece en la sección «Liquidación» de tu tienda.</span></span>
+            </label>
+          )}
         </div>
       ) : (<>
       <div className="grid grid-cols-2 gap-3">
