@@ -6,7 +6,7 @@ import { uploadPhoto, removePhotos } from "../../lib/photos.js";
 import { fmt, parseMoney, moneyInput } from "../../lib/format.js";
 import { friendlyDbError } from "../../lib/errors.js";
 import VariantBuilder, { toVariants, fromVariants } from "../../components/VariantBuilder.jsx";
-import { COLLECTIONS } from "../../lib/variants.jsx";
+import CategoryPicker from "../../components/CategoryPicker.jsx";
 
 const CATEGORIES = ["Tecnología", "Hogar y muebles", "Ropa y accesorios", "Vehículos", "Deportes", "Bebés y niños", "Herramientas", "Otros"];
 const CONDITIONS = ["Nuevo", "Como nuevo", "Usado"];
@@ -212,9 +212,8 @@ export default function ProductForm() {
 
       {isStore && (
         <>
-          <label className={label} htmlFor="col">Categoría de tu tienda</label>
-          <input id="col" list="collections" maxLength={30} value={f.collection} onChange={set("collection")} placeholder="Ej: Remeras" className={input} />
-          <datalist id="collections">{COLLECTIONS.map((c) => <option key={c} value={c} />)}</datalist>
+          <p className={label}>Categoría de tu tienda</p>
+          <CategoryPicker sellerId={seller.id} value={f.collection} onChange={(c) => setF((x) => ({ ...x, collection: c }))} />
           <p className={label}>Talles, colores y stock</p>
           <div className="mt-2"><VariantBuilder value={variants} onChange={setVariants} /></div>
           {!varList && <p className="mt-1 text-[12px] text-zinc-500">Si no tiene talles ni colores, dejá todo vacío y poné la cantidad abajo.</p>}
