@@ -23,11 +23,23 @@ export default function Login() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-
-  if (session) return <Navigate to={volver} replace />;
-
   const input = "mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-3 text-base outline-none focus:border-zinc-900";
   const btn = "mt-4 flex min-h-[48px] w-full items-center justify-center rounded-2xl bg-hpred text-[15px] font-semibold text-white disabled:opacity-40";
+
+  // Con sesión abierta: si viene a elegir un plan, avisamos con qué cuenta está en vez de mandarlo al panel sin decir nada.
+  if (session && !plan) return <Navigate to={volver} replace />;
+  if (session && plan) return (
+    <Phone>
+      <BrandBar />
+      <main className="px-5 pb-10 pt-8">
+        <h1 className="font-display text-2xl font-extrabold">Ya entraste con otra cuenta</h1>
+        <p className="mt-2 text-sm text-zinc-600">Estás como <b>{session.user.email}</b>. Para crear una cuenta nueva con el plan <b>{PLANS[plan]}</b>, primero cerrá esta sesión.</p>
+        <button onClick={() => supabase.auth.signOut()} className={btn}>Cerrar sesión y crear otra cuenta</button>
+        <button onClick={() => nav("/panel")} className="mt-3 flex min-h-[48px] w-full items-center justify-center rounded-2xl text-[15px] font-semibold ring-1 ring-zinc-300">Seguir con mi cuenta</button>
+      </main>
+    </Phone>
+  );
+
 
   const sendCode = async (e) => {
     e?.preventDefault();

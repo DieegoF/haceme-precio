@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase.js";
 import { useSeller } from "../../lib/useSeller.js";
 import { slugify, validSlug } from "../../lib/slug.js";
 import { BrandBar, Phone } from "../../components/Brand.jsx";
+import StoreSetup from "./StoreSetup.jsx";
 
 // Marco del panel del vendedor: carga la cuenta, pide nombre/link la primera vez y muestra la barra de abajo.
 export default function PanelLayout() {
@@ -15,6 +16,7 @@ export default function PanelLayout() {
       {loading ? <p className="py-20 text-center text-sm text-zinc-500">Cargando tu cuenta…</p>
         : error || !seller ? <p className="m-5 rounded-2xl bg-rose-50 p-4 text-sm text-rose-800 ring-1 ring-rose-200">No pudimos cargar tu cuenta. Recargá la página; si sigue, escribinos.</p>
         : !seller.name ? <><BrandBar /><Onboarding seller={seller} account={ctx.account} onDone={ctx.reload} /></>
+        : seller.is_store && !ctx.store?.ready ? <StoreSetup seller={seller} store={ctx.store} onDone={ctx.reload} />
         : (
           <>
             <div className="flex-1 pb-24"><Outlet context={ctx} /></div>

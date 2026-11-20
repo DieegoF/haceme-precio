@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { supabase } from "../../lib/supabase.js";
 import { useAuth } from "../../lib/auth.jsx";
 import { BrandBar } from "../../components/Brand.jsx";
+import StoreEditor from "./StoreEditor.jsx";
 
 const PLAN_NAME = { pase: "Una sola cosa", mensual: "Básico", pro: "Pro con IA", tienda: "Tienda" };
 const PLAN_PRICE = { pase: "$5.000 único", mensual: "$10.000/mes", pro: "$30.000/mes", tienda: "$40.000/mes" };
@@ -10,7 +11,7 @@ const STATUS = { prueba: "Prueba gratis", activa: "Activa", gracia: "Pago pendie
 const daysLeft = (iso) => Math.max(0, Math.ceil((new Date(iso) - Date.now()) / 86400000));
 
 export default function Cuenta() {
-  const { seller, account } = useOutletContext();
+  const { seller, account, store, reload } = useOutletContext();
   const { session } = useAuth();
   const nav = useNavigate();
   const plan = account?.plan || "mensual";
@@ -35,6 +36,8 @@ export default function Cuenta() {
           )}
           <p className="mt-3 text-[11px] text-zinc-400">El cobro con Mercado Pago se activa en la fase 6.</p>
         </section>
+
+        {seller.is_store && store && <StoreEditor seller={seller} store={store} onSaved={reload} />}
 
         <button onClick={() => nav("/demo")} className="mt-4 text-[13px] font-semibold text-hpred underline">Ver la demo completa</button>
         <div className="mt-8 border-t border-zinc-100 pt-4 text-center">

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { BadgeCheck, Share2 } from "lucide-react";
+import { BadgeCheck, Share2, MapPin, MessageCircle, Truck } from "lucide-react";
+import { StoreAvatar, StoreBanner } from "../../components/StoreBrand.jsx";
+import { waLink } from "../../lib/offers.js";
 import { getSellerBySlug, getSellerProducts } from "../../lib/publicData.js";
 import { fmt } from "../../lib/format.js";
 import { Phone } from "../../components/Brand.jsx";
@@ -43,6 +45,7 @@ export default function SellerPage() {
         <Link to="/" aria-label="Haceme Precio"><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-6 w-auto" /></Link>
         <button onClick={share} className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-[12px] font-semibold"><Share2 size={13} /> {shared || "Compartir"}</button>
       </header>
+      {seller.store ? <StoreHeader seller={seller} store={seller.store} /> : (
       <section className="px-5 pt-2">
         <div className="flex items-center gap-3">
           <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-ink font-display text-2xl font-black text-white">{seller.name.charAt(0).toUpperCase()}</span>
@@ -52,6 +55,7 @@ export default function SellerPage() {
           </div>
         </div>
       </section>
+      )}
 
       {products.length === 0 ? (
         <p className="px-6 py-16 text-center text-sm text-zinc-500">Todavía no hay publicaciones. ¡Volvé pronto!</p>
@@ -74,5 +78,29 @@ export default function SellerPage() {
         </ul>
       )}
     </Phone>
+  );
+}
+
+function StoreHeader({ seller, store }) {
+  return (
+    <>
+      <StoreBanner banner={store.banner_url} color={store.color} className="h-32 sm:h-40" />
+      <section className="px-5 pb-2">
+        <div className="-mt-11 flex items-end justify-between">
+          <StoreAvatar name={seller.name} logo={store.logo_url} color={store.color} size={88} />
+          {seller.phone_verified && <span className="mb-1 flex items-center gap-1 rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700"><BadgeCheck size={13} /> Verificada</span>}
+        </div>
+        <h1 className="mt-2 font-display text-2xl font-extrabold leading-tight">{seller.name}</h1>
+        {store.tagline && <p className="text-[14px] text-zinc-600">{store.tagline}</p>}
+        <p className="mt-2 flex items-start gap-1.5 text-[13px] text-zinc-500"><MapPin size={14} className="mt-0.5 shrink-0" /> {store.address}{store.hours ? ` · ${store.hours}` : ""}</p>
+        <p className="mt-1 flex items-start gap-1.5 text-[13px] text-zinc-500"><Truck size={14} className="mt-0.5 shrink-0" /> {[store.pickup && "Retiro en el local", store.shipping_enabled && `Envíos: ${store.shipping_note || "a coordinar"}`].filter(Boolean).join(" · ")}</p>
+        {store.whatsapp && (
+          <a href={waLink(store.whatsapp, `¡Hola ${seller.name}! Vi tu tienda en Haceme Precio 🙂`)} target="_blank" rel="noreferrer"
+            style={{ backgroundColor: store.color }} className="mt-3 flex min-h-[46px] items-center justify-center gap-1.5 rounded-2xl text-[14px] font-semibold text-white">
+            <MessageCircle size={16} /> Consultar por WhatsApp
+          </a>
+        )}
+      </section>
+    </>
   );
 }
