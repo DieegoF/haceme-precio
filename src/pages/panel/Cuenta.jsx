@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase.js";
 import { useAuth } from "../../lib/auth.jsx";
 import { BrandBar } from "../../components/Brand.jsx";
 import StoreEditor from "./StoreEditor.jsx";
+import MpConnect from "../../components/MpConnect.jsx";
 
 const PLAN_NAME = { pase: "Una sola cosa", mensual: "Básico", pro: "Pro con IA", tienda: "Tienda" };
 const PLAN_PRICE = { pase: "$5.000 único", mensual: "$10.000/mes", pro: "$30.000/mes", tienda: "$40.000/mes" };
@@ -37,6 +38,7 @@ export default function Cuenta() {
           <p className="mt-3 text-[11px] text-zinc-400">El cobro con Mercado Pago se activa en la fase 6.</p>
         </section>
 
+        <MpConnect />
         {seller.is_store && store && <StoreEditor seller={seller} store={store} onSaved={reload} />}
 
         <button onClick={() => nav("/demo")} className="mt-4 text-[13px] font-semibold text-hpred underline">Ver la demo completa</button>
