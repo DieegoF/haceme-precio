@@ -78,7 +78,7 @@ export default function SellerPage() {
             ))}
           </div>
         )}
-        <ul className="mt-4 grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 lg:grid-cols-4 lg:gap-5 lg:px-8">
+        <ul className="mt-4 grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 lg:grid-cols-4 lg:gap-5 lg:px-8 xl:grid-cols-5 2xl:grid-cols-6">
           {shown.map((p) => { const pr = priceFor(p, seller.store); const off = offPct(pr.price, pr.was); return (
             <li key={p.id}>
               <Link to={`/${seller.slug}/${p.slug}`} className="block overflow-hidden rounded-2xl bg-white ring-1 ring-zinc-200">
