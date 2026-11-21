@@ -20,8 +20,9 @@ Deno.serve(async (req) => {
   const { data: u } = await admin.auth.getUser(jwt);
   const uid = u?.user?.id;
   if (!uid) return json({ error: "SIN_SESION" }, 401);
-  const { data: seller } = await admin.from("sellers").select("id").eq("id", uid).maybeSingle();
+  const { data: seller } = await admin.from("sellers").select("id, is_demo").eq("id", uid).maybeSingle();
   if (!seller) return json({ error: "SIN_PERFIL" }, 403);
+  if (seller.is_demo) return json({ error: "DEMO" }, 403); // las cuentas demo no conectan Mercado Pago
 
   const body = await req.json().catch(() => ({}));
   const { data: cfg } = await admin.from("app_settings").select("value").eq("key", "app_url").single();

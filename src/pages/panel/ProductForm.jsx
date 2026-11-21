@@ -119,6 +119,11 @@ export default function ProductForm() {
     <form onSubmit={save} className="px-5 pb-8 pt-5">
       <button type="button" onClick={() => nav("/panel/productos")} className="flex items-center gap-1 text-[13px] font-semibold text-zinc-500"><ArrowLeft size={15} /> Mis productos</button>
       <h1 className="mt-2 font-display text-2xl font-extrabold">{editing ? "Editar producto" : "Cargar un producto"}</h1>
+      {seller.is_demo && (
+        <p className="mt-2 rounded-xl bg-amber-50 p-3 text-[13px] text-amber-950 ring-1 ring-amber-200">
+          {editing ? "En la demo podés cambiar el precio, el mínimo y el stock. Los textos y las fotos quedan fijos." : "Mirá el formulario tranquilo: en la demo no se guardan productos nuevos. Con tu cuenta cargás una foto, ponés el precio y listo."}
+        </p>
+      )}
 
       <p className={label}>Fotos <span className="font-normal text-zinc-500">({photos.length}/{MAX_PHOTOS}) · la primera es la portada</span></p>
       {photos.length === 0 && <p className="mt-0.5 text-[12px] text-zinc-500">Sacá la foto con buena luz, de frente y sobre un fondo liso.</p>}
