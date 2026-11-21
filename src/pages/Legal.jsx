@@ -8,7 +8,7 @@ import { supportLink } from "./Ayuda.jsx";
 export const OWNER = {
   name: "Diego Fernandez",
   cuit: "20-37280762-9",
-  email: "diegofernandez@gmail.com",
+  email: "diegofernandez637@gmail.com",
   place: "Berazategui, Provincia de Buenos Aires",
 };
 const UPDATED = "21 de noviembre de 2026";
