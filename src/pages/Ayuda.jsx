@@ -11,12 +11,12 @@ export const supportLink = (text = "¡Hola! Necesito ayuda con Haceme Precio.") 
 const VENDO = [
   ["¿Qué es Haceme Precio?", "Una página para tus cosas en venta, con un solo link. El que entra ve tus productos y te hace una oferta. Vos ponés lo mínimo que aceptás y la app se encarga: rechaza sola lo que está por debajo y, si querés, acepta sola lo que te sirve."],
   ["¿Cómo empiezo?", "Tocá «Crear mi cuenta» y entrá con tu cuenta de Google. Ponés tu nombre, elegís tu link y listo. Para publicar: sacás una foto, ponés el precio y lo mínimo que aceptás."],
-  ["¿Cuánto sale?", "Si vendés poco, tus 2 primeras publicaciones son gratis y después cada una cuesta $5.000. El plan Básico es $10.000 por mes, con publicaciones sin límite y 15 días gratis para probarlo. El plan Tienda, para locales, es $40.000 por mes, también con 15 días gratis. No cobramos comisión por venta."],
+  ["¿Cuánto sale?", "Empezar es gratis: publicás sin límite y solo pagás el 3% de las ventas que cobrás con Mercado Pago dentro de la app (sin comisión hasta febrero de 2027). Lo que cobrás en efectivo o por transferencia no paga nada. Si vendés seguido, el plan Básico ($10.000 por mes) y el plan Tienda para locales ($40.000 por mes) no tienen comisión; los dos tienen 15 días de prueba."],
   ["¿El comprador ve mi precio mínimo?", "No. Lo mínimo que aceptás queda guardado en privado y solo lo usa la app para responder. El comprador nunca lo ve."],
   ["¿Qué pasa si me ofertan de madrugada?", "Si la oferta es más baja que tu mínimo, se rechaza sola con un mensaje amable. Si es buena y activaste «aceptar sola», queda el trato hecho. Si no, tenés 12 horas para responder."],
   ["¿Cómo contraoferto?", "En «Ofertas» tocás la oferta y «Contraofertar», ponés tu precio y listo. El comprador tiene 12 horas para aceptarlo."],
   ["¿Cómo cobro?", "Si conectás tu Mercado Pago (en «Mi cuenta»), el comprador paga con un botón y la plata va directo a tu cuenta. Si no, coordinan por WhatsApp como siempre. Nunca entregues sin ver la plata acreditada: no te guíes por capturas."],
-  ["¿Cómo pago mi plan?", "En «Mi cuenta» tocás «Pagar 1 mes» y pagás con Mercado Pago. Si se vence, tenés 3 días para pagar sin que pase nada. Después tus publicaciones se pausan, pero no se borran: vuelven solas apenas pagás."],
+  ["¿Cómo pago mi plan?", "En «Mi cuenta» tocás «Pagar 1 mes» y pagás con Mercado Pago. Si el Básico se vence y no pagás, pasás solo al plan Gratis: no se pausa nada. En la Tienda tenés 3 días para pagar; después tus publicaciones se pausan, pero no se borran y vuelven solas apenas pagás."],
   ["¿Puedo usarlo en la compu?", "Sí. Funciona en el celular y en la compu, entrando a la misma página con tu cuenta de Google."],
   ["Me olvidé cómo entré", "Entrás siempre con «Continuar con Google», con el mismo mail. No necesitás contraseña nueva. Si no te acordás qué mail usaste, escribinos por WhatsApp."],
 ];

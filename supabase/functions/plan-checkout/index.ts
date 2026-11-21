@@ -1,5 +1,5 @@
-// Edge Function: el vendedor paga su plan (un mes) o un pase de $5.000 a Haceme Precio con Mercado Pago.
-// pay  → { kind: "mes", plan: "mensual" | "tienda" } o { kind: "pase" }: crea la order con el token de
+// Edge Function: el vendedor paga su plan (un mes) a Haceme Precio con Mercado Pago.
+// pay  → { kind: "mes", plan: "mensual" | "tienda" }: crea la order con el token de
 //        Haceme Precio (MP_ACCESS_TOKEN, solo servidor) y devuelve el checkout_url.
 // sync → { payment_id }: consulta la order a MP y, si está pagada, la acredita (mark_plan_paid).
 // El monto sale SIEMPRE del servidor (plan_price), nunca del navegador. Requiere la sesión del vendedor (JWT).
@@ -37,10 +37,7 @@ Deno.serve(async (req) => {
   if (["suspendida", "cancelada"].includes(acc.status)) return json({ error: "CUENTA_SUSPENDIDA" }, 403);
 
   let kind: string, plan: string, title: string;
-  if (body.kind === "pase") {
-    if (acc.plan !== "pase") return json({ error: "SOLO_PASE" }, 400);
-    kind = "pase"; plan = "pase"; title = "Haceme Precio · Pase para 1 publicación";
-  } else if (body.kind === "mes" && PLANES_A_LA_VENTA.includes(body.plan)) {
+  if (body.kind === "mes" && PLANES_A_LA_VENTA.includes(body.plan)) {
     kind = "mes"; plan = body.plan; title = `Haceme Precio · Plan ${NOMBRE[plan]} (1 mes)`;
   } else return json({ error: "DATOS" }, 400);
 

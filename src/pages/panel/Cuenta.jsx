@@ -30,7 +30,7 @@ export default function Cuenta() {
         ) : <PlanCard account={account} onPaid={reload} />}
 
         {account?.is_admin && <button onClick={() => nav("/admin")} className="mt-4 w-full rounded-2xl bg-zinc-900 py-3 text-[14px] font-semibold text-white">Panel de administración</button>}
-        {!seller.is_demo && <MpConnect />}
+        {!seller.is_demo && <MpConnect plan={account?.plan} />}
         {seller.is_store && store && <StoreEditor seller={seller} store={store} onSaved={reload} />}
 
         <a href="/ayuda" className="mt-4 flex min-h-[48px] items-center justify-center rounded-2xl bg-white text-[15px] font-semibold ring-1 ring-zinc-300">¿Necesitás ayuda? Preguntas y WhatsApp</a>

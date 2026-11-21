@@ -5,17 +5,17 @@ import { LOGO_HORIZ } from "../prototype/brand.js";
 
 // Landing pública (responsive). No depende del prototipo: carga liviana.
 const PLANS = [
-  { k: "pase", e: "🏷️", t: "Vendo una sola cosa", p: "Gratis", per: "las 2 primeras", d: "Tus 2 primeras publicaciones son gratis. Desde la 3ª, $5.000 cada una o pasate al Básico.", f: ["1 publicación activa", "Ofertas con mínimo oculto", "Link para compartir"], cta: "Publicar gratis" },
-  { k: "mensual", e: "🛍️", t: "Básico", p: "$10.000", per: "/mes", d: "Para el que vende seguido en Marketplace, WhatsApp o Instagram.", f: ["Publicaciones sin límite", "Tu vidriera con todo", "Varias unidades por producto"], cta: "Probar 15 días gratis", star: true },
-  { k: "tienda", e: "🏬", t: "Tienda", p: "$40.000", per: "/mes", d: "Para locales: tu ventana de venta sin armar un e-commerce.", f: ["Talles, colores y stock", "Carrito y pedidos", "Promos, logo y portada"], cta: "Probar 15 días gratis" },
+  { k: "gratis", e: "🏷️", t: "Gratis", p: "$0", per: "/mes", d: "Publicás sin límite y pagás solo cuando vendés: 3% de las ventas que cobrás con Mercado Pago en la app. Sin comisión hasta febrero 2027.", f: ["Publicaciones sin límite", "Ofertas con mínimo oculto", "Tu vidriera con un link"], cta: "Empezar gratis", star: true },
+  { k: "mensual", e: "🛍️", t: "Básico", p: "$10.000", per: "/mes", d: "Para el que vende seguido: sin comisión, todo lo que vendés es tuyo.", f: ["Todo lo del Gratis", "0% de comisión", "Conviene si vendés más de $330.000 por mes con Mercado Pago"], cta: "Probar 15 días gratis" },
+  { k: "tienda", e: "🏬", t: "Tienda", p: "$40.000", per: "/mes", d: "Para locales: tu ventana de venta sin armar un e-commerce.", f: ["Talles, colores y stock", "Carrito y pedidos", "Promos, logo y portada · 0% de comisión"], cta: "Probar 15 días gratis" },
   { k: "pro", e: "✨", t: "Pro con IA", p: "$30.000", per: "/mes", d: "Todo lo del Básico, y la IA arma tus publicaciones desde las fotos.", f: ["Todo lo del Básico", "Título y descripción con IA", "Próximamente"], cta: "Anotarme", soon: true },
 ];
 const FAQS = [
   ["¿Tengo que dejar Marketplace, Instagram o WhatsApp?", "No. Seguís publicando donde siempre y compartís tu link. Haceme Precio se encarga de las ofertas y de las preguntas repetidas."],
   ["¿El comprador tiene que descargar algo o crear una cuenta?", "No. Toca el link, ve fotos y precio, y oferta desde el navegador. Sin cuenta ni contraseña."],
   ["¿Alguien puede ver mi precio mínimo?", "No. Lo mínimo que aceptás queda guardado en el servidor y nunca le llega al comprador. Las ofertas más bajas se frenan solas."],
-  ["¿Cómo cobro?", "Coordinás con el comprador por WhatsApp. Pronto vas a poder cobrar con Mercado Pago dentro de la app, con confirmación automática. Nunca aceptes capturas como comprobante."],
-  ["¿Cobran comisión por venta?", "No. Pagás tu plan y listo: lo que vendés es todo tuyo."],
+  ["¿Cómo cobro?", "Conectás tu Mercado Pago y el comprador paga con un botón: la plata va directo a tu cuenta y se confirma sola. También podés coordinar por WhatsApp como siempre. Nunca aceptes capturas como comprobante."],
+  ["¿Cobran comisión por venta?", "Solo en el plan Gratis: 3% de las ventas que cobrás con Mercado Pago dentro de la app (y recién desde febrero de 2027). Lo que cobrás en efectivo no paga nada. Con el Básico o la Tienda no pagás comisión."],
   ["¿Puedo cancelar cuando quiera?", "Sí, con un botón desde «Mi cuenta». Seguís usando lo que pagaste hasta el final del período."],
 ];
 
@@ -77,10 +77,10 @@ function Hero() {
             Compartís un link y te llegan <b>ofertas en serio</b>, no charlas eternas. Las ofertas bajas se frenan solas, las buenas se aceptan con un botón y tu precio mínimo no lo ve nadie.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link to="/ingresar?plan=mensual" className={btnRed}>Empezar gratis</Link>
+            <Link to="/ingresar?plan=gratis" className={btnRed}>Empezar gratis</Link>
             <Link to="/demo" className={btnGhost}>Ver cómo funciona</Link>
           </div>
-          <p className="mt-3 text-[13px] text-zinc-500">15 días gratis · sin tarjeta · sin comisión por venta</p>
+          <p className="mt-3 text-[13px] text-zinc-500">Gratis para empezar · sin tarjeta · pagás solo cuando vendés</p>
         </div>
         <HeroPhone />
       </div>
@@ -238,7 +238,7 @@ function Plans() {
       <div className={wrap}>
         <p className="text-sm font-semibold uppercase tracking-wider text-hpred">Planes</p>
         <h2 className="mt-2 font-display text-3xl font-black sm:text-4xl">¿Qué vendés?</h2>
-        <p className="mt-2 text-[16px] text-zinc-600">Sin comisión por venta. Lo cambiás o lo cancelás cuando quieras.</p>
+        <p className="mt-2 text-[16px] text-zinc-600">Empezá gratis y pagá solo cuando vendés. Si vendés seguido, un plan te saca la comisión.</p>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {PLANS.map((p) => (
             <div key={p.k} className={`relative flex flex-col rounded-3xl bg-white p-6 ${p.star ? "ring-2 ring-hpred" : "ring-1 ring-kraft-200"}`}>
@@ -300,10 +300,10 @@ function FinalCta() {
     <section className="bg-hpred py-16 text-white lg:py-20">
       <div className={`${wrap} flex flex-col items-start justify-between gap-6 md:flex-row md:items-center`}>
         <div>
-          <h2 className="font-display text-3xl font-black sm:text-4xl">Probalo gratis 15 días</h2>
-          <p className="mt-2 text-[16px] text-white/85">Cargás tu primer producto en un minuto. Sin tarjeta.</p>
+          <h2 className="font-display text-3xl font-black sm:text-4xl">Empezá gratis hoy</h2>
+          <p className="mt-2 text-[16px] text-white/85">Cargás tu primer producto en un minuto. Sin tarjeta y sin costo fijo.</p>
         </div>
-        <Link to="/ingresar?plan=mensual" className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-2xl bg-white px-8 text-[17px] font-semibold text-hpred"><ShoppingBag size={18} /> Empezar ahora</Link>
+        <Link to="/ingresar?plan=gratis" className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-2xl bg-white px-8 text-[17px] font-semibold text-hpred"><ShoppingBag size={18} /> Empezar ahora</Link>
       </div>
     </section>
   );

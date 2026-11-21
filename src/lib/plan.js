@@ -1,11 +1,24 @@
+import { useEffect, useState } from "react";
 import { supabase } from "./supabase.js";
 
-export const PLAN_NAME = { pase: "Una sola cosa", mensual: "Básico", pro: "Pro con IA", tienda: "Tienda" };
-export const PLAN_PRICE = { pase: 5000, mensual: 10000, pro: 30000, tienda: 40000 };
+export const PLAN_NAME = { gratis: "Gratis", pase: "Gratis", mensual: "Básico", pro: "Pro con IA", tienda: "Tienda" };
+export const PLAN_PRICE = { gratis: 0, pase: 0, mensual: 10000, pro: 30000, tienda: 40000 };
 export const PLAN_FOR_SALE = ["mensual", "tienda"]; // v1: Básico y Tienda
+// Comisión del plan Gratis (la define el servidor): { commission_pct, commission_from }.
+export function usePricing() {
+  const [p, setP] = useState(null);
+  useEffect(() => { supabase.rpc("pricing_info").then(({ data }) => setP(data || null)); }, []);
+  return p;
+}
+export const commissionLive = (p) => Boolean(p && new Date(p.commission_from) <= new Date());
+export const commissionText = (p) => !p ? "" : commissionLive(p)
+  ? `${p.commission_pct}% de cada venta que cobrás con Mercado Pago en la app`
+  : `${p.commission_pct}% de cada venta que cobrás con Mercado Pago en la app, recién desde el ${new Date(p.commission_from).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric", timeZone: "America/Argentina/Buenos_Aires" })}`;
+export const isFree = (plan) => plan === "gratis" || plan === "pase";
+
 export const PLAN_BLURB = {
-  mensual: "Publicaciones sin límite y ofertas con tus reglas.",
-  tienda: "Tu tienda con carrito, pedidos, promos y métricas.",
+  mensual: "Sin comisión: todo lo que vendés es tuyo.",
+  tienda: "Tu tienda con carrito, pedidos, promos y métricas. Sin comisión.",
 };
 
 // Fecha en que vence lo que tiene hoy (igual que plan_due en la base).
