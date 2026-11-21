@@ -12,6 +12,7 @@ import { StoreAvatar } from "../../components/StoreBrand.jsx";
 import { Phone } from "../../components/Brand.jsx";
 import { Stars, useSellerReviews } from "../../components/Reviews.jsx";
 import { avgText } from "../../lib/reviews.js";
+import ReportButton from "../../components/ReportButton.jsx";
 import { LOGO_HORIZ } from "../../prototype/brand.js";
 
 export default function ProductPage() {
@@ -124,7 +125,8 @@ export default function ProductPage() {
             <li>• Nunca pagues por adelantado a alguien que te escribe por fuera.</li>
           </ul>
         </section>
-        <p className="mt-6 text-center text-[10px] leading-relaxed text-zinc-400">Haceme Precio es una herramienta para gestionar ofertas entre partes. No actúa como intermediario financiero ni garantiza entregas.</p>
+        <div className="mt-4 flex justify-center"><ReportButton kind="producto" target={p.id} /></div>
+        <p className="mt-4 text-center text-[10px] leading-relaxed text-zinc-400">Haceme Precio es una herramienta para gestionar ofertas entre partes. No actúa como intermediario financiero ni garantiza entregas.</p>
       </main>
       </div>
 
