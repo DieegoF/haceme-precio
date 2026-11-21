@@ -11,6 +11,12 @@ import StoreSetup from "./StoreSetup.jsx";
 export default function PanelLayout() {
   const ctx = useSeller();
   const { loading, seller, error } = ctx;
+  // Si entró con Google eligiendo un plan, se aplica ahora (solo en cuentas recién creadas).
+  React.useEffect(() => {
+    let plan = null;
+    try { plan = localStorage.getItem("hp_plan_elegido"); localStorage.removeItem("hp_plan_elegido"); } catch { /* nada */ }
+    if (plan) supabase.rpc("claim_initial_plan", { p_plan: plan }).then(() => ctx.reload());
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Phone className="relative flex flex-col">
       {loading ? <p className="py-20 text-center text-sm text-zinc-500">Cargando tu cuenta…</p>
