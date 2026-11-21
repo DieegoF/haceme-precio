@@ -49,7 +49,7 @@ export default function SellerPage() {
   };
 
   return (
-    <Phone wide className={seller.store ? "pb-28" : "pb-10"}>
+    <Phone wide="full" className={seller.store ? "pb-28" : "pb-10"}>
       <header className="flex items-center justify-between px-4 py-3 lg:px-8">
         <Link to="/" aria-label="Haceme Precio"><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-6 w-auto" /></Link>
         <button onClick={share} className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-[12px] font-semibold"><Share2 size={13} /> {shared || "Compartir"}</button>
