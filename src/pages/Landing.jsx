@@ -53,7 +53,7 @@ function Nav() {
         </nav>
         <div className="flex items-center gap-2">
           <Link to="/ingresar" className="rounded-xl px-3 py-2 text-[14px] font-semibold text-zinc-700 hover:bg-white">Ingresar</Link>
-          <Link to="/ingresar?plan=mensual" className="hidden rounded-xl bg-hpred px-4 py-2 text-[14px] font-semibold text-white sm:inline-flex">Empezar gratis</Link>
+          <Link to="/ingresar?plan=gratis" className="hidden rounded-xl bg-hpred px-4 py-2 text-[14px] font-semibold text-white sm:inline-flex">Empezar gratis</Link>
         </div>
       </div>
     </header>
