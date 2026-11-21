@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { X, Clock, CheckCircle2, XCircle, MessageCircle, Copy, ShieldCheck } from "lucide-react";
-import { submitOffer, getMyOffers, answerCounter, offerError, savedBuyer, saveBuyer, useNow, left, hhmm } from "../lib/offers.js";
+import { buyerToken, submitOffer, getMyOffers, answerCounter, offerError, savedBuyer, saveBuyer, useNow, left, hhmm } from "../lib/offers.js";
 import { fmt, parseMoney, moneyInput } from "../lib/format.js";
 
 // Todo lo del comprador en la página del producto: el botón, la hoja para ofertar y el estado de su oferta.
@@ -93,6 +93,18 @@ function OfferSheet({ product, attemptsLeft, onClose, onDone }) {
   );
 }
 
+// Link personal: abre esta oferta desde cualquier celular o navegador (lleva el identificador del comprador).
+function SaveLink({ product }) {
+  const url = `${window.location.origin}${window.location.pathname}?o=${buyerToken()}`;
+  const msg = `Mi oferta por «${product.title}» en Haceme Precio. Para ver si me respondieron, tocá acá: ${url}`;
+  return (
+    <a href={`https://wa.me/?text=${encodeURIComponent(msg)}`} target="_blank" rel="noreferrer"
+      className="mt-3 flex min-h-[44px] items-center justify-center rounded-2xl bg-white text-[14px] font-semibold text-emerald-700 ring-1 ring-emerald-300">
+      📲 Guardar mi oferta en WhatsApp
+    </a>
+  );
+}
+
 function StatusCard({ o, product, seller, attemptsLeft, onReload, onRetry }) {
   const now = useNow();
   const [busy, setBusy] = useState(false);
@@ -108,12 +120,14 @@ function StatusCard({ o, product, seller, attemptsLeft, onReload, onRetry }) {
     <section id="mi-oferta" className={box + " bg-amber-50 ring-amber-200"}>
       <p className="flex items-center gap-1.5 font-semibold text-amber-900"><Clock size={17} /> Ofreciste {fmt(o.amount)}</p>
       <p className="mt-1 text-[13px] text-amber-900">Esperando respuesta. El vendedor tiene <b className="font-mono">{left(o.expires_at, now)}</b> para contestar. Si no contesta, se vence sola y no pasa nada.</p>
+      <SaveLink product={product} />
     </section>
   );
   if (o.status === "contraoferta") return (
     <section id="mi-oferta" className={box + " bg-sky-50 ring-sky-200"}>
       <p className="font-semibold text-sky-900">El vendedor te propone {fmt(o.counter_amount)}</p>
       <p className="mt-1 text-[13px] text-sky-900">Ofreciste {fmt(o.amount)}. Tenés <b className="font-mono">{left(o.expires_at, now)}</b> para responder.</p>
+      <SaveLink product={product} />
       {err && <p className="mt-2 text-[13px] font-semibold text-rose-700">{err}</p>}
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button disabled={busy} onClick={() => answer(false)} className="min-h-[46px] rounded-2xl bg-white text-[14px] font-semibold ring-1 ring-zinc-300">No, gracias</button>

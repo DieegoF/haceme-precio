@@ -50,7 +50,7 @@ export default function Ofertas() {
             <>
               <Section title="Trato hecho · coordiná la entrega" items={deals} render={(o) => <Deal key={o.id} o={o} seller={seller} onAct={act} />} />
               <Section title="Para responder" items={pending} render={(o) => <Pending key={o.id} o={o} onAct={act} />} />
-              <Section title="Esperando al comprador" items={waiting} render={(o) => <Waiting key={o.id} o={o} />} />
+              <Section title="Esperando al comprador" items={waiting} render={(o) => <Waiting key={o.id} o={o} seller={seller} />} />
               {history.length > 0 && (
                 <section className="mt-6">
                   <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Historial</h2>
@@ -130,12 +130,17 @@ function Pending({ o, onAct }) {
   );
 }
 
-function Waiting({ o }) {
+function Waiting({ o, seller }) {
   const now = useNow();
+  const link = `${window.location.origin}/${seller.slug}/${o.product_slug}`;
+  const msg = `¡Hola ${o.buyer_name}! Soy ${seller.name}. Por «${o.product_title}» te propongo ${fmt(o.counter_amount)}. Tenés 12 horas para aceptar o no desde acá: ${link}`;
   return (
     <li className="rounded-2xl bg-white p-3 ring-1 ring-sky-200">
       <Head o={o} />
       <p className="mt-2 text-[13px] text-sky-800">Le propusiste <b>{fmt(o.counter_amount)}</b>. Tiene {left(o.expires_at, now)} para contestar.</p>
+      {o.buyer_contact && (
+        <a href={waLink(o.buyer_contact, msg)} target="_blank" rel="noreferrer" className="mt-2 flex min-h-[42px] items-center justify-center rounded-xl bg-[#25D366] text-[13px] font-semibold text-white">Avisarle por WhatsApp</a>
+      )}
     </li>
   );
 }

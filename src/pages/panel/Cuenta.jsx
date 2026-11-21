@@ -36,9 +36,9 @@ export default function Cuenta() {
             <p className="mt-1 text-[13px] text-zinc-300">Te quedan <b className="text-white">{daysLeft(account.trial_ends_at)} días</b> de prueba gratis.</p>
           )}
           {plan === "pase" && (
-            <p className="mt-1 text-[13px] text-zinc-300">{!account?.free_pass_used_at ? <>Tu <b className="text-white">primera publicación es gratis</b>.</>
+            <p className="mt-1 text-[13px] text-zinc-300">{(account?.free_passes_used ?? 0) < 2 ? <>Te {2 - (account?.free_passes_used ?? 0) === 1 ? "queda" : "quedan"} <b className="text-white">{2 - (account?.free_passes_used ?? 0)} {2 - (account?.free_passes_used ?? 0) === 1 ? "publicación gratis" : "publicaciones gratis"}</b>.</>
               : account.pass_credits > 0 ? <>Tenés <b className="text-white">{account.pass_credits} {account.pass_credits === 1 ? "pase" : "pases"}</b> para publicar.</>
-              : <>Ya usaste tu publicación gratis. La próxima cuesta $5.000.</>}</p>
+              : <>Ya usaste tus 2 publicaciones gratis. La próxima cuesta $5.000, o pasate al Básico ($10.000/mes, sin límite).</>}</p>
           )}
           <p className="mt-3 text-[11px] text-zinc-400">El cobro del plan con Mercado Pago llega pronto.</p>
         </section>

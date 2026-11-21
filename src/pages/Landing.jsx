@@ -5,7 +5,7 @@ import { LOGO_HORIZ } from "../prototype/brand.js";
 
 // Landing pública (responsive). No depende del prototipo: carga liviana.
 const PLANS = [
-  { k: "pase", e: "🏷️", t: "Vendo una sola cosa", p: "Gratis", per: "la 1ª vez", d: "Tu primera publicación es gratis. Si después querés vender otra cosa, cada una cuesta $5.000.", f: ["1 publicación activa", "Ofertas con mínimo oculto", "Link para compartir"], cta: "Publicar gratis" },
+  { k: "pase", e: "🏷️", t: "Vendo una sola cosa", p: "Gratis", per: "las 2 primeras", d: "Tus 2 primeras publicaciones son gratis. Desde la 3ª, $5.000 cada una o pasate al Básico.", f: ["1 publicación activa", "Ofertas con mínimo oculto", "Link para compartir"], cta: "Publicar gratis" },
   { k: "mensual", e: "🛍️", t: "Básico", p: "$10.000", per: "/mes", d: "Para el que vende seguido en Marketplace, WhatsApp o Instagram.", f: ["Publicaciones sin límite", "Tu vidriera con todo", "Varias unidades por producto"], cta: "Probar 15 días gratis", star: true },
   { k: "tienda", e: "🏬", t: "Tienda", p: "$40.000", per: "/mes", d: "Para locales: tu ventana de venta sin armar un e-commerce.", f: ["Talles, colores y stock", "Carrito y pedidos", "Promos, logo y portada"], cta: "Probar 15 días gratis" },
   { k: "pro", e: "✨", t: "Pro con IA", p: "$30.000", per: "/mes", d: "Todo lo del Básico, y la IA arma tus publicaciones desde las fotos.", f: ["Todo lo del Básico", "Título y descripción con IA", "Próximamente"], cta: "Anotarme", soon: true },
@@ -186,7 +186,7 @@ function Features() {
     [Lock, "Mínimo oculto", "Ponés lo mínimo que aceptás. Nadie lo ve, y las ofertas más bajas se frenan solas."],
     [Zap, "Venta automática", "Si ofrecen cerca de tu precio, se acepta sola y te avisamos. Vendés mientras dormís."],
     [Repeat2, "Sin regateo eterno", "Cada comprador tiene 2 intentos. Podés contraofertar una vez y listo."],
-    [Clock3, "Todo con tiempo", "15 minutos para responder, 12 horas para cerrar. Nadie te reserva y desaparece."],
+    [Clock3, "Todo con tiempo", "12 horas para responder y 12 para cerrar. Si la oferta te sirve, se acepta sola aunque estés durmiendo."],
     [Share2, "Link que se ve bien", "Al pegarlo en WhatsApp o Instagram aparece la foto, el título y el precio."],
     [Store, "Tu vidriera o tu tienda", "Todo lo que vendés en un link. Si tenés local: talles, colores, carrito y pedidos."],
   ];
