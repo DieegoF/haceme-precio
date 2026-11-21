@@ -1,8 +1,8 @@
 // Traduce errores de la base a mensajes simples.
 export function friendlyDbError(error) {
   const m = error?.message || "";
-  if (m.includes("PLAN_INACTIVO")) return "Tu plan no está activo. Renovalo para publicar.";
-  if (m.includes("PASE_PAGO")) return "Ya usaste tus 2 publicaciones gratis. Para publicar otra cosa, el pase cuesta $5.000, o pasate al Básico ($10.000/mes, publicaciones sin límite).";
+  if (m.includes("PLAN_INACTIVO")) return "Tu plan venció. Pagalo en «Mi cuenta» y vas a poder publicar de nuevo.";
+  if (m.includes("PASE_PAGO")) return "Ya usaste tus 2 publicaciones gratis. Comprá un pase de $5.000 en «Mi cuenta», o pasate al Básico ($10.000/mes, sin límite).";
   if (m.includes("LIMITE_PASE")) return "Con el pase tenés una sola publicación activa. Pausá la otra o pasate al plan Básico.";
   if (m.includes("SIN_PERFIL")) return "Completá tu nombre y tu link antes de publicar.";
   if (m.includes("mínimo no puede ser mayor")) return "Lo mínimo que aceptás no puede ser más que el precio publicado.";
