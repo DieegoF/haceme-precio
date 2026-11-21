@@ -315,7 +315,10 @@ function Footer() {
       <div className={`${wrap} flex flex-col gap-4 text-[13px] md:flex-row md:items-center md:justify-between`}>
         <img src={LOGO_HORIZ} alt="Haceme Precio" className="h-7 w-auto rounded bg-white p-1" />
         <p className="max-w-xl leading-relaxed">Haceme Precio es una herramienta para gestionar ofertas y condiciones comerciales entre partes. No actúa como intermediario financiero ni garantiza entregas.</p>
-        <p className="flex gap-4"><Link to="/ayuda" className="underline">Ayuda</Link><Link to="/demo" className="underline">Demo</Link><span>© {new Date().getFullYear()} Haceme Precio</span></p>
+        <div className="flex flex-col gap-2">
+          <Link to="/arrepentimiento" className="inline-flex w-fit items-center rounded-lg bg-white px-3 py-1.5 font-semibold text-ink">Botón de arrepentimiento</Link>
+          <p className="flex flex-wrap gap-x-4 gap-y-1"><Link to="/baja" className="underline">Botón de baja</Link><Link to="/terminos" className="underline">Términos</Link><Link to="/privacidad" className="underline">Privacidad</Link><Link to="/ayuda" className="underline">Ayuda</Link><Link to="/demo" className="underline">Demo</Link><span>© {new Date().getFullYear()} Haceme Precio</span></p>
+        </div>
       </div>
     </footer>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import { useAuth } from "../lib/auth.jsx";
 import { BrandBar, Phone } from "../components/Brand.jsx";
@@ -92,6 +92,7 @@ export default function Login() {
             {err && <p className="mt-2 text-sm font-semibold text-hpred">{err}</p>}
             <button className={btn} disabled={busy || !/^\S+@\S+\.\S+$/.test(email)}>{busy ? "Enviando…" : "Enviarme el código"}</button>
             <p className="mt-4 text-center text-[12px] text-zinc-500">Si es tu primera vez, se crea tu cuenta sola.</p>
+            <p className="mt-2 text-center text-[11px] text-zinc-400">Al entrar aceptás los <Link to="/terminos" className="underline">Términos</Link> y la <Link to="/privacidad" className="underline">Política de privacidad</Link>.</p>
           </form>
         ) : (
           <form onSubmit={verify}>
