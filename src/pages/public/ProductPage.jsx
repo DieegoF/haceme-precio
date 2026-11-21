@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { MapPin, Truck, Share2, ShieldCheck, BadgeCheck, Store, Package } from "lucide-react";
+import { ChevronLeft, MapPin, Truck, Share2, ShieldCheck, BadgeCheck, Store, Package } from "lucide-react";
 import { getProduct, getSellerBySlug } from "../../lib/publicData.js";
 import { fmt } from "../../lib/format.js";
 import Gallery from "../../components/Gallery.jsx";
@@ -43,7 +43,7 @@ export default function ProductPage() {
   const { seller, product: p } = state;
   if (!p) return (
     <Phone>
-      <TopBar />
+      <TopBar seller={seller} />
       <main className="px-5 py-16 text-center">
         <p className="text-4xl">🔎</p>
         <h1 className="mt-2 font-display text-2xl font-extrabold">Esta publicación ya no está disponible</h1>
@@ -61,7 +61,7 @@ export default function ProductPage() {
   const off = offPct(pr.price, pr.was);
   return (
     <Phone wide className="relative pb-28 lg:pb-12">
-      <TopBar right={<button onClick={share} className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-[12px] font-semibold"><Share2 size={13} /> {shared || "Compartir"}</button>} />
+      <TopBar seller={seller} right={<button onClick={share} className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-[12px] font-semibold"><Share2 size={13} /> {shared || "Compartir"}</button>} />
       <div className="lg:grid lg:grid-cols-2 lg:gap-10 lg:px-8 lg:pt-4">
       <div className="relative lg:sticky lg:top-4 lg:self-start lg:overflow-hidden lg:rounded-3xl">
         <Gallery key={gallery.join("|")} photos={gallery} alt={p.title} />
@@ -133,10 +133,15 @@ export default function ProductPage() {
   );
 }
 
-function TopBar({ right }) {
+// Arriba: «Volver» a la tienda del vendedor (va directo, aunque el link haya llegado por WhatsApp).
+function TopBar({ right, seller }) {
   return (
-    <header className="flex items-center justify-between px-4 py-3">
-      <Link to="/" aria-label="Haceme Precio"><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-6 w-auto" /></Link>
+    <header className="flex items-center justify-between gap-3 px-4 py-3 lg:px-8">
+      {seller ? (
+        <Link to={`/${seller.slug}`} className="flex min-h-[40px] min-w-0 items-center gap-1.5 rounded-full bg-zinc-100 py-2 pl-2.5 pr-4 text-[14px] font-semibold">
+          <ChevronLeft size={18} className="shrink-0" /> <span className="truncate">Volver a {seller.name}</span>
+        </Link>
+      ) : <Link to="/" aria-label="Haceme Precio"><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-6 w-auto" /></Link>}
       {right}
     </header>
   );
