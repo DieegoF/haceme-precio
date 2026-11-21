@@ -5,7 +5,7 @@ import { supabase } from "../../lib/supabase.js";
 import { fmt } from "../../lib/format.js";
 
 // Panel de administración (solo is_admin). Pensado para compu; en el celular se ve en columna.
-const PLAN = { pase: "Una sola cosa", mensual: "Básico", pro: "Pro con IA", tienda: "Tienda" };
+const PLAN = { gratis: "Gratis", pase: "Gratis (viejo)", mensual: "Básico", pro: "Pro con IA", tienda: "Tienda" };
 const STATUS = { prueba: "Prueba", activa: "Activa", gracia: "Pago pendiente", vencida: "Vencida", suspendida: "Suspendida", cancelada: "Cancelada" };
 const TONE = { prueba: "bg-sky-100 text-sky-800", activa: "bg-emerald-100 text-emerald-800", gracia: "bg-amber-100 text-amber-800", vencida: "bg-zinc-200 text-zinc-700", suspendida: "bg-rose-100 text-rose-700", cancelada: "bg-zinc-200 text-zinc-600" };
 const ACTION = { plan: "Cambió el plan", extender: "Extendió la prueba", estado: "Cambió el estado", pases: "Ajustó pases", pausar: "Pausó publicación", liberar: "Liberó publicación",
@@ -67,7 +67,8 @@ function Resumen() {
         <Card label="Ofertas" value={o.offers_month} sub={`${o.deals_month} tratos cerrados`} />
         <Card label="Publicaciones activas" value={o.products_active} sub={`${o.products_paused_admin} pausadas por vos`} />
         <Card label="Con Mercado Pago" value={o.mp_connected} sub="cuentas conectadas" />
-        <Card label="Por plan" value={`${plan.tienda || 0} tiendas`} sub={`${plan.mensual || 0} Básico · ${plan.pase || 0} una sola cosa · ${plan.pro || 0} Pro`} />
+        <Card label="Por plan" value={`${plan.gratis || 0} gratis`} sub={`${plan.mensual || 0} Básico · ${plan.tienda || 0} Tienda${plan.pro ? ` · ${plan.pro} Pro` : ""}`} />
+        <Card label="Cobrado este mes" value={fmt(Number(o.fees_month || 0) + Number(o.plans_paid_month || 0))} sub={`${fmt(o.fees_month || 0)} de comisiones · ${fmt(o.plans_paid_month || 0)} de planes`} />
         <Card label="Por estado" value={`${st.activa || 0} activas`} sub={`${st.suspendida || 0} suspendidas · ${st.vencida || 0} vencidas`} />
       </div>
     </>
@@ -107,8 +108,7 @@ function Vendedores() {
                 <td className="p-3"><p className="font-semibold">{s.name || "(sin nombre)"} {s.is_admin && <span className="ml-1 rounded bg-ink px-1.5 text-[10px] text-white">admin</span>}</p>
                   <p className="text-zinc-500">{s.email}</p>{s.slug && <a href={`/${s.slug}`} target="_blank" rel="noreferrer" className="text-hpred underline">/{s.slug}</a>}</td>
                 <td className="p-3"><select value={s.plan} onChange={(e) => act(s, "plan", e.target.value, `Cambiar el plan a ${PLAN[e.target.value]}`)} className="rounded-lg border border-zinc-300 px-2 py-1">
-                  {Object.entries(PLAN).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
-                  {s.plan === "pase" && <p className="mt-1 text-[11px] text-zinc-500">{s.free_pass_used_at ? "Gratis usada" : "Gratis disponible"} · {s.pass_credits} pases</p>}</td>
+                  {Object.entries(PLAN).filter(([k]) => k !== "pase").map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></td>
                 <td className="p-3"><span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${TONE[s.status]}`}>{STATUS[s.status]}</span>
                   {s.status === "prueba" && <p className="mt-1 text-[11px] text-zinc-500">hasta {date(s.trial_ends_at)}</p>}</td>
                 <td className="p-3 text-zinc-600">{date(s.created_at)}</td>
@@ -117,7 +117,6 @@ function Vendedores() {
                 <td className="p-3">{s.mp ? "✓" : "—"}</td>
                 <td className="p-3"><div className="flex flex-wrap gap-1.5">
                   <button onClick={() => act(s, "extender", 7, "Extender la prueba 7 días")} className="rounded-lg px-2 py-1 font-semibold ring-1 ring-zinc-300 hover:bg-zinc-50">+7 días</button>
-                  {s.plan === "pase" && <button onClick={() => act(s, "pases", s.pass_credits + 1, "Dar 1 pase")} className="rounded-lg px-2 py-1 font-semibold ring-1 ring-zinc-300 hover:bg-zinc-50">+1 pase</button>}
                   {s.status !== "suspendida"
                     ? <button onClick={() => act(s, "estado", "suspendida", "Suspender la cuenta")} className="rounded-lg px-2 py-1 font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">Suspender</button>
                     : <button onClick={() => act(s, "estado", "activa", "Reactivar la cuenta")} className="rounded-lg px-2 py-1 font-semibold text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-50">Reactivar</button>}

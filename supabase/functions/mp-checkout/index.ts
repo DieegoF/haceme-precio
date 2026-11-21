@@ -9,6 +9,14 @@ const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers
 const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 const UUID = /^[0-9a-f-]{36}$/i;
 const money = (n: number) => n.toFixed(2);
+// Comisión de Haceme Precio (solo plan Gratis, desde el lanzamiento). MP la descuenta sola del cobro (marketplace_fee).
+// En modo prueba con el token de la app el cobrador es la propia app: no se puede cobrar comisión a uno mismo.
+async function feeFor(sellerId: string, total: number) {
+  if (Deno.env.get("MP_PRUEBA_TOKEN_APP") === "1") return 0;
+  const { data } = await admin.rpc("commission_pct", { p_seller: sellerId });
+  const pct = Number(data) || 0;
+  return pct > 0 ? Math.round(total * pct) / 100 : 0;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -39,12 +47,13 @@ Deno.serve(async (req) => {
   const back = `${conf.app_url}/pedido/${o.id}?mp=volver`;
 
   const items = (o.order_items as any[]).map((i) => ({ title: String(i.title).slice(0, 120), unit_price: money(i.unit_price), quantity: i.qty }));
+  const fee = await feeFor(o.seller_id, Number(o.total));
   const r = await fetch("https://api.mercadopago.com/v1/orders", {
     method: "POST",
     headers: { Authorization: `Bearer ${mpToken(c)}`, "Content-Type": "application/json", accept: "application/json", "X-Idempotency-Key": crypto.randomUUID() },
     body: JSON.stringify({
       type: "online", processing_mode: "manual", total_amount: money(o.total), external_reference: o.id,
-      description: `Pedido #${o.code}`, expiration_time: `PT${minutes}M`, items,
+      description: `Pedido #${o.code}`, expiration_time: `PT${minutes}M`, items, ...(fee > 0 ? { marketplace_fee: money(fee) } : {}),
       config: { online: { // los avisos llegan por el webhook configurado en la app de MP
          success_url: back, failure_url: back, pending_url: back, auto_return: "all" } },
     }),
@@ -52,7 +61,7 @@ Deno.serve(async (req) => {
   const m = await r.json().catch(() => ({}));
   const url = m.checkout_url ?? m.config?.online?.checkout_url;
   if (!r.ok || !m.id || !url) return json({ error: "MP_RECHAZO", detail: m?.message || m?.errors || r.status }, 502);
-  await admin.from("orders").update({ mp_order_id: m.id, mp_checkout_url: url }).eq("id", o.id).is("mp_order_id", null);
+  await admin.from("orders").update({ mp_order_id: m.id, mp_checkout_url: url, fee_amount: fee }).eq("id", o.id).is("mp_order_id", null);
   // Si otro intento se guardó primero, usamos ese (el que el servidor va a seguir).
   const { data: saved } = await admin.from("orders").select("mp_checkout_url").eq("id", o.id).single();
   return json({ url: saved?.mp_checkout_url ?? url });
@@ -76,6 +85,7 @@ async function offerFlow(action: string, offerId: string, token: string) {
   const { data: cfg } = await admin.from("app_settings").select("value").eq("key", "app_url").single();
   const back = `${cfg!.value}/${(o as any).sellers.slug}/${(o as any).products.slug}?mp=volver`;
   const title = String((o as any).products.title).slice(0, 120);
+  const fee = await feeFor(o.seller_id, Number(o.amount));
   const r = await fetch("https://api.mercadopago.com/v1/orders", {
     method: "POST",
     headers: { Authorization: `Bearer ${mpToken(c)}`, "Content-Type": "application/json", accept: "application/json", "X-Idempotency-Key": crypto.randomUUID() },
@@ -83,13 +93,14 @@ async function offerFlow(action: string, offerId: string, token: string) {
       type: "online", processing_mode: "manual", total_amount: money(o.amount), external_reference: o.id,
       description: `Trato: ${title}`, expiration_time: `PT${minutes}M`,
       items: [{ title, unit_price: money(o.amount), quantity: 1 }],
+      ...(fee > 0 ? { marketplace_fee: money(fee) } : {}),
       config: { online: { success_url: back, failure_url: back, pending_url: back, auto_return: "all" } },
     }),
   });
   const m = await r.json().catch(() => ({}));
   const url = m.checkout_url ?? m.config?.online?.checkout_url;
   if (!r.ok || !m.id || !url) return json({ error: "MP_RECHAZO", detail: m?.message || m?.errors || r.status }, 502);
-  await admin.from("offers").update({ mp_order_id: m.id, mp_checkout_url: url }).eq("id", o.id).is("mp_order_id", null);
+  await admin.from("offers").update({ mp_order_id: m.id, mp_checkout_url: url, fee_amount: fee }).eq("id", o.id).is("mp_order_id", null);
   const { data: saved } = await admin.from("offers").select("mp_checkout_url").eq("id", o.id).single();
   return json({ url: saved?.mp_checkout_url ?? url });
 }

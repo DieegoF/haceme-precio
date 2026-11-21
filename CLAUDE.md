@@ -2,8 +2,8 @@
 
 ## Producto
 - PWA para vendedores (Marketplace, WhatsApp, Instagram y locales). Textos de la interfaz en español rioplatense con voseo, cortos y simples (pensados para alguien que no sabe de tecnología).
-- Planes: pase $5.000 único · Básico $10.000/mes · Pro con IA $30.000/mes · Tienda $40.000/mes. v1 lanza Básico y Tienda.
-- El comprador paga directo a la cuenta de Mercado Pago del vendedor. Haceme Precio solo cobra la suscripción: nunca comisión por venta.
+- Planes: Gratis (sin costo fijo, 3% de comisión solo en ventas cobradas con Mercado Pago dentro de la app, desde el 21/02/2027) · Básico $10.000/mes sin comisión · Tienda $40.000/mes sin comisión · Pro con IA $30.000/mes (más adelante). Básico y Tienda con 15 días de prueba. «Una sola cosa» (pase) ya no se ofrece.
+- El comprador paga directo a la cuenta de Mercado Pago del vendedor. En el plan Gratis, Haceme Precio cobra su comisión con el split de MP (`marketplace_fee`); el % y la fecha de inicio viven en `app_settings` (server-only). Los planes pagos no tienen comisión.
 
 ## Seguridad (no negociable)
 - El precio mínimo (`floor_price`) y el % de auto-aceptación viven en una tabla privada que el comprador NUNCA puede leer. La oferta se evalúa en el servidor (función de Postgres o Edge Function), nunca en el navegador.

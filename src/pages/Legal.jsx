@@ -50,21 +50,21 @@ export function Terminos() {
 
       <H>3. Planes y precios</H>
       <L items={[
-        "«Una sola cosa»: las 2 primeras publicaciones son gratis. Desde la tercera, cada publicación cuesta $5.000 (pase).",
-        "Básico: $10.000 por mes, con 15 días de prueba gratis. Si ya usaste tus 2 publicaciones gratis, el Básico se paga desde el primer día.",
-        "Tienda: $40.000 por mes, con 15 días de prueba gratis.",
+        "Gratis: sin costo mensual y publicaciones sin límite. Haceme Precio cobra una comisión del 3% sobre las ventas que cobrás con Mercado Pago dentro de la página; Mercado Pago la descuenta automáticamente del cobro. Las ventas que cobrás por fuera (efectivo, transferencia) no pagan comisión. La comisión empieza a cobrarse el 21 de febrero de 2027.",
+        "Básico: $10.000 por mes, sin comisión, con 15 días de prueba gratis al registrarte.",
+        "Tienda: $40.000 por mes, sin comisión, con 15 días de prueba gratis.",
         "Los precios incluyen impuestos, si correspondieran. Si cambian, te avisamos con al menos 30 días de anticipación.",
-        "Haceme Precio no cobra comisión por las ventas.",
+        "Si cambia el porcentaje de comisión, te avisamos con al menos 30 días de anticipación.",
       ]} />
 
       <H>4. Pagos del plan</H>
-      <P>Los planes se pagan mes a mes con Mercado Pago, desde «Mi cuenta». <b>No hay débito automático ni renovación automática:</b> si no pagás, no se te cobra nada. Cuando vence la prueba o el mes pagado tenés 3 días para pagar sin cortes. Después, tus publicaciones se pausan (no se borran) y vuelven a estar activas apenas pagás.</P>
+      <P>Los planes se pagan mes a mes con Mercado Pago, desde «Mi cuenta». <b>No hay débito automático ni renovación automática:</b> si no pagás, no se te cobra nada. Si vence el Básico, pasás solo al plan Gratis. Si vence la Tienda, tenés 3 días para pagar sin cortes; después, tus publicaciones se pausan (no se borran) y vuelven a estar activas apenas pagás.</P>
 
       <H>5. Cobros de las ventas</H>
-      <P>Si el vendedor conecta su cuenta de Mercado Pago, el comprador paga directamente a esa cuenta. Mercado Pago procesa el pago según sus propios términos. Haceme Precio solo muestra como «pagado» lo que Mercado Pago confirma como acreditado.</P>
+      <P>Si el vendedor conecta su cuenta de Mercado Pago, el comprador paga directamente a esa cuenta. Mercado Pago procesa el pago según sus propios términos y, en el plan Gratis, separa automáticamente la comisión de Haceme Precio. Haceme Precio solo muestra como «pagado» lo que Mercado Pago confirma como acreditado.</P>
 
       <H>6. Arrepentimiento y baja</H>
-      <P>Si contrataste un plan o un pase, podés arrepentirte dentro de los 10 días corridos desde la contratación, usando el <Link to="/arrepentimiento" className="underline">botón de arrepentimiento</Link>, sin registrarte ni hacer otro trámite. Te devolvemos lo pagado por el mismo medio. También podés pedir la baja del servicio cuando quieras desde el <Link to="/baja" className="underline">botón de baja</Link>. En ambos casos te damos un código de trámite en el momento.</P>
+      <P>Si contrataste un plan, podés arrepentirte dentro de los 10 días corridos desde la contratación, usando el <Link to="/arrepentimiento" className="underline">botón de arrepentimiento</Link>, sin registrarte ni hacer otro trámite. Te devolvemos lo pagado por el mismo medio. También podés pedir la baja del servicio cuando quieras desde el <Link to="/baja" className="underline">botón de baja</Link>. En ambos casos te damos un código de trámite en el momento.</P>
       <P>Si compraste un producto a un vendedor, el arrepentimiento de esa compra se gestiona con el vendedor, que es quien te lo vendió.</P>
 
       <H>7. Qué no se puede publicar</H>
@@ -152,7 +152,7 @@ export function Tramite({ kind }) {
     <Page title={baja ? "Botón de baja" : "Botón de arrepentimiento"}>
       {baja
         ? <P>Pedí la baja de tu plan o de tu cuenta de Haceme Precio. No hace falta que entres a tu cuenta. Como los planes se pagan mes a mes, a partir de la baja no se te cobra nada más.</P>
-        : <P>Si contrataste un plan o un pase de Haceme Precio, podés arrepentirte dentro de los 10 días corridos desde que lo contrataste. Te devolvemos lo pagado por el mismo medio. No hace falta que entres a tu cuenta.</P>}
+        : <P>Si contrataste un plan de Haceme Precio, podés arrepentirte dentro de los 10 días corridos desde que lo contrataste. Te devolvemos lo pagado por el mismo medio. No hace falta que entres a tu cuenta.</P>}
       {!baja && <p className="mt-2 rounded-xl bg-amber-50 p-3 text-[14px] text-amber-950 ring-1 ring-amber-200">Si compraste un producto a un vendedor de Haceme Precio, el arrepentimiento de esa compra lo gestionás directamente con ese vendedor.</p>}
 
       {state && typeof state === "object" ? (

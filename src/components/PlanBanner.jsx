@@ -1,11 +1,11 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { planDue, GRACE_DAYS, addDays, daysLeft, dayMonth } from "../lib/plan.js";
+import { planDue, GRACE_DAYS, addDays, daysLeft, dayMonth, isFree } from "../lib/plan.js";
 
 // Aviso arriba del panel cuando el plan está por vencer, venció o quedó pausado. Lleva a «Mi cuenta» para pagar.
 export default function PlanBanner({ account }) {
   const { pathname } = useLocation();
-  if (!account || account.plan === "pase" || pathname.startsWith("/panel/cuenta")) return null;
+  if (!account || isFree(account.plan) || pathname.startsWith("/panel/cuenta")) return null;
   const due = planDue(account);
   if (!due) return null;
   const left = daysLeft(due);
@@ -19,7 +19,7 @@ export default function PlanBanner({ account }) {
   } else if (left <= 3) {
     tone = "bg-sky-50 text-sky-900 ring-sky-200";
     text = account.status === "prueba"
-      ? `Tu prueba gratis termina ${left === 0 ? "hoy" : left === 1 ? "mañana" : `en ${left} días`}. Pagá tu plan para seguir vendiendo sin cortes.`
+      ? `Tu prueba gratis termina ${left === 0 ? "hoy" : left === 1 ? "mañana" : `en ${left} días`}.${account.plan === "tienda" ? " Pagá tu plan para seguir vendiendo sin cortes." : " Si no pagás, pasás al plan Gratis (con comisión en las ventas con Mercado Pago)."}`
       : `Tu plan vence ${left === 0 ? "hoy" : left === 1 ? "mañana" : `en ${left} días`}.`;
   } else return null;
   return (
