@@ -6,6 +6,7 @@ import { StoreAvatar } from "../../components/StoreBrand.jsx";
 import { getMyOrders, cancelMyOrder, orderError, ORDER_STATUS, payOrder, syncOrderPayment } from "../../lib/cart.js";
 import { useNow, left, waLink } from "../../lib/offers.js";
 import { fmt } from "../../lib/format.js";
+import { ReviewBox } from "../../components/Reviews.jsx";
 
 // Seguimiento del pedido para el comprador (sin cuenta: lo reconoce por su navegador).
 export default function OrderPage() {
@@ -85,6 +86,7 @@ export default function OrderPage() {
           {o.status === "cancelado" && <p className="mt-3 text-[14px] opacity-95">{o.cancelled_by === "comprador" ? "Cancelaste este pedido." : "El local canceló este pedido."}</p>}
           {o.status === "vencido" && <p className="mt-3 text-[14px] opacity-95">Pasaron las 24 h sin confirmación y el stock se liberó. Podés volver a pedirlo.</p>}
         </section>
+        {o.status === "entregado" && <ReviewBox kind="pedido" id={o.id} />}
 
         {waitingPay && (
           <button disabled={paying} onClick={pay} className="mt-4 flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-[#009EE3] text-[16px] font-semibold text-white disabled:opacity-50">
