@@ -12,7 +12,7 @@ export default function PanelLayout() {
   const ctx = useSeller();
   const { loading, seller, error } = ctx;
   return (
-    <Phone wide className="relative flex flex-col lg:min-h-screen">
+    <Phone wide="full" className="relative flex flex-col lg:min-h-screen">
       {loading ? <p className="py-20 text-center text-sm text-zinc-500">Cargando tu cuenta…</p>
         : error || !seller ? <p className="m-5 rounded-2xl bg-rose-50 p-4 text-sm text-rose-800 ring-1 ring-rose-200">No pudimos cargar tu cuenta. Recargá la página; si sigue, escribinos.</p>
         : !seller.name ? <><BrandBar /><Onboarding seller={seller} account={ctx.account} onDone={ctx.reload} /></>
@@ -30,7 +30,7 @@ export default function PanelLayout() {
               </nav>
               <a href={`/${seller.slug}`} target="_blank" rel="noreferrer" className="mt-auto rounded-xl px-3 py-2 text-[13px] font-semibold text-hpred hover:bg-zinc-50">Ver mi {seller.is_store ? "tienda" : "vidriera"} ↗</a>
             </aside>
-            <div className="flex-1 pb-24 lg:mx-auto lg:max-w-3xl lg:pb-10"><Outlet context={ctx} /></div>
+            <div className="min-w-0 flex-1 pb-24 lg:pb-10"><div className="lg:mx-auto lg:max-w-5xl lg:px-6"><Outlet context={ctx} /></div></div>
             <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto grid max-w-md grid-cols-4 lg:hidden border-t border-zinc-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
               {seller.is_store ? <Tab to="/panel" end Icon={ShoppingBag} label="Pedidos" /> : <Tab to="/panel" end Icon={Inbox} label="Ofertas" />}
               <Tab to="/panel/productos" Icon={Package} label="Productos" />
