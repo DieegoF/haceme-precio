@@ -5,7 +5,7 @@ import { useAuth } from "../lib/auth.jsx";
 import { BrandBar, Phone } from "../components/Brand.jsx";
 
 const PLANS = {
-  pase: "Vendo una sola cosa · la 1ª publicación es gratis",
+  pase: "Vendo una sola cosa · las 2 primeras publicaciones son gratis",
   mensual: "Básico · $10.000/mes",
   pro: "Pro con IA · $30.000/mes",
   tienda: "Tienda · $40.000/mes",

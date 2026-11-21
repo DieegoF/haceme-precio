@@ -17,6 +17,9 @@ import NotFound from "./pages/NotFound.jsx";
 import ProductPage from "./pages/public/ProductPage.jsx";
 import SellerPage from "./pages/public/SellerPage.jsx";
 import Status from "./Status.jsx";
+import { adoptBuyerToken } from "./lib/offers.js";
+
+adoptBuyerToken(); // si llegó con su link personal de oferta (?o=…), recupera sus ofertas en este navegador
 
 // La demo es pesada: se carga solo si alguien la abre.
 const Demo = lazy(() => import("./pages/Demo.jsx"));

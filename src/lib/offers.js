@@ -9,6 +9,17 @@ export function buyerToken() {
     return t;
   } catch { return crypto.randomUUID(); }
 }
+// Link personal de la oferta (?o=identificador): al abrirlo en otro navegador, recupera las ofertas.
+export function adoptBuyerToken() {
+  try {
+    const t = new URLSearchParams(window.location.search).get("o");
+    if (t && /^[0-9a-f-]{36}$/i.test(t)) {
+      localStorage.setItem("hp_buyer_token", t);
+      const u = new URL(window.location.href); u.searchParams.delete("o");
+      window.history.replaceState(null, "", u.pathname + u.search + u.hash);
+    }
+  } catch { /* sin almacenamiento */ }
+}
 export const savedBuyer = () => { try { return JSON.parse(localStorage.getItem("hp_buyer") || "{}"); } catch { return {}; } };
 export const saveBuyer = (b) => { try { localStorage.setItem("hp_buyer", JSON.stringify(b)); } catch { /* sin almacenamiento */ } };
 
