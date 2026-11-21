@@ -47,7 +47,7 @@ export default function OrderPage() {
 
   const s = o.seller;
   const st = ORDER_STATUS[o.status];
-  const color = s.color || "#C8102E";
+  const color = s.color || "#2443B5";
   const lines = o.items.map((i) => `• ${i.qty} × ${i.title}${i.color || i.size ? ` (${[i.color, i.size && `talle ${i.size}`].filter(Boolean).join(", ")})` : ""}`).join("\n");
   const msg = `¡Hola ${s.name}! Soy ${o.buyer_name}, te hice el pedido #${o.code}:\n${lines}\nTotal: ${fmt(o.total)}\n${o.delivery === "envio" ? `Envío a: ${o.address}` : "Lo retiro en el local"}.\n¿Cómo te pago?`;
 
