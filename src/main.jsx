@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound.jsx";
 import ProductPage from "./pages/public/ProductPage.jsx";
 import SellerPage from "./pages/public/SellerPage.jsx";
 import Status from "./Status.jsx";
+import Ayuda from "./pages/Ayuda.jsx";
 import DemoStrip from "./components/DemoStrip.jsx";
 import { adoptBuyerToken } from "./lib/offers.js";
 
@@ -47,6 +48,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="/demo/prototipo" element={<Prototipo />} />
           <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
           <Route path="/estado" element={<Status />} />
+          <Route path="/ayuda" element={<Ayuda />} />
           <Route path="/pedido/:id" element={<OrderPage />} />
           {/* Links públicos: /vendedor y /vendedor/producto (van al final para no pisar las rutas de la app) */}
           <Route path="/:sellerSlug" element={<SellerPage />} />

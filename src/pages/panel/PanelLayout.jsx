@@ -35,7 +35,8 @@ export default function PanelLayout() {
                 <SideTab to="/panel/cargar" Icon={Plus} label="Cargar producto" />
                 <SideTab to="/panel/cuenta" Icon={User} label="Mi cuenta" />
               </nav>
-              <a href={`/${seller.slug}`} target="_blank" rel="noreferrer" className="mt-auto rounded-xl px-3 py-2 text-[13px] font-semibold text-hpred hover:bg-zinc-50">Ver mi {seller.is_store ? "tienda" : "vidriera"} ↗</a>
+              <a href="/ayuda" target="_blank" rel="noreferrer" className="mt-auto rounded-xl px-3 py-2 text-[13px] font-semibold text-zinc-500 hover:bg-zinc-50">Ayuda</a>
+              <a href={`/${seller.slug}`} target="_blank" rel="noreferrer" className="rounded-xl px-3 py-2 text-[13px] font-semibold text-hpred hover:bg-zinc-50">Ver mi {seller.is_store ? "tienda" : "vidriera"} ↗</a>
             </aside>
             <div className="min-w-0 flex-1 pb-24 lg:pb-10"><div className="lg:mx-auto lg:max-w-5xl lg:px-6"><PlanBanner account={ctx.account} /><Outlet context={ctx} /></div></div>
             <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto grid max-w-md grid-cols-4 lg:hidden border-t border-zinc-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
