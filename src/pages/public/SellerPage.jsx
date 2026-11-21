@@ -11,6 +11,7 @@ import NotFound from "../NotFound.jsx";
 import { CartBar } from "../../components/CartSheet.jsx";
 import { PromoBanner, FreeShipNote, StoreFaq } from "../../components/StoreExtras.jsx";
 import { priceFor, offPct, trackVisit } from "../../lib/promo.js";
+import { RatingBadge, ReviewList, useSellerReviews } from "../../components/Reviews.jsx";
 
 // Vidriera del vendedor: todo lo que tiene publicado, en un solo link.
 export default function SellerPage() {
@@ -31,6 +32,7 @@ export default function SellerPage() {
     })();
     return () => { alive = false; };
   }, [sellerSlug]);
+  const reviews = useSellerReviews(state.seller?.id);
 
   if (state.loading) return <Phone><p className="py-24 text-center text-sm text-zinc-500">Cargando…</p></Phone>;
   if (!state.seller) return <NotFound />;
@@ -54,13 +56,14 @@ export default function SellerPage() {
         <Link to="/" aria-label="Haceme Precio"><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-6 w-auto" /></Link>
         <button onClick={share} className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-[12px] font-semibold"><Share2 size={13} /> {shared || "Compartir"}</button>
       </header>
-      {seller.store ? <StoreHeader seller={seller} store={seller.store} /> : (
+      {seller.store ? <StoreHeader seller={seller} store={seller.store} reviews={reviews} /> : (
       <section className="px-5 pt-2 lg:px-8">
         <div className="flex items-center gap-3">
           <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-ink font-display text-2xl font-black text-white">{seller.name.charAt(0).toUpperCase()}</span>
           <div className="min-w-0">
             <h1 className="flex items-center gap-1 font-display text-2xl font-extrabold leading-tight">{seller.name} {seller.phone_verified && <BadgeCheck size={18} className="text-sky-600" aria-label="Teléfono verificado" />}</h1>
             <p className="text-[13px] text-zinc-500">{active.length} {active.length === 1 ? "publicación" : "publicaciones"} · hacé tu oferta en cada una</p>
+            <RatingBadge summary={reviews} onClick={() => document.getElementById("opiniones")?.scrollIntoView({ behavior: "smooth" })} />
           </div>
         </div>
       </section>
@@ -100,13 +103,14 @@ export default function SellerPage() {
         </ul>
         </>
       )}
+      <ReviewList summary={reviews} />
       {seller.store && <StoreFaq store={seller.store} />}
       {seller.store && <CartBar seller={seller} store={seller.store} />}
     </Phone>
   );
 }
 
-function StoreHeader({ seller, store }) {
+function StoreHeader({ seller, store, reviews }) {
   return (
     <>
       <div className="lg:px-8"><StoreBanner banner={store.banner_url} color={store.color} className="h-32 sm:h-40 lg:h-56 lg:rounded-3xl" /></div>
@@ -117,6 +121,7 @@ function StoreHeader({ seller, store }) {
         </div>
         <h1 className="mt-2 font-display text-2xl font-extrabold leading-tight">{seller.name}</h1>
         {store.tagline && <p className="text-[14px] text-zinc-600">{store.tagline}</p>}
+        <RatingBadge summary={reviews} onClick={() => document.getElementById("opiniones")?.scrollIntoView({ behavior: "smooth" })} />
         <p className="mt-2 flex items-start gap-1.5 text-[13px] text-zinc-500"><MapPin size={14} className="mt-0.5 shrink-0" /> {store.address}{store.hours ? ` · ${store.hours}` : ""}</p>
         <p className="mt-1 flex items-start gap-1.5 text-[13px] text-zinc-500"><Truck size={14} className="mt-0.5 shrink-0" /> {[store.pickup && "Retiro en el local", store.shipping_enabled && `Envíos: ${store.shipping_note || "a coordinar"}`].filter(Boolean).join(" · ")}</p>
         <FreeShipNote store={store} className="mt-1" />

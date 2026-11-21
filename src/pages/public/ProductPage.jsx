@@ -10,6 +10,8 @@ import { PromoBanner, FreeShipNote } from "../../components/StoreExtras.jsx";
 import { priceFor, offPct, trackVisit, activePromo, inScope } from "../../lib/promo.js";
 import { StoreAvatar } from "../../components/StoreBrand.jsx";
 import { Phone } from "../../components/Brand.jsx";
+import { Stars, useSellerReviews } from "../../components/Reviews.jsx";
+import { avgText } from "../../lib/reviews.js";
 import { LOGO_HORIZ } from "../../prototype/brand.js";
 
 export default function ProductPage() {
@@ -30,6 +32,7 @@ export default function ProductPage() {
     })();
     return () => { alive = false; };
   }, [sellerSlug, productSlug]);
+  const reviews = useSellerReviews(state.seller?.id);
 
   const share = async () => {
     const url = window.location.href;
@@ -107,6 +110,7 @@ export default function ProductPage() {
           {store ? <StoreAvatar name={seller.name} logo={store.logo_url} color={store.color} size={44} /> : <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-ink font-display text-lg font-black text-white">{seller.name.charAt(0).toUpperCase()}</span>}
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1 font-semibold">{seller.name} {seller.phone_verified && <BadgeCheck size={15} className="text-sky-600" aria-label="Teléfono verificado" />}</span>
+            {reviews?.count > 0 && <span className="flex items-center gap-1 text-[12px] font-semibold text-zinc-700"><Stars value={reviews.avg} size={12} /> {avgText(reviews.avg)} ({reviews.count})</span>}
             <span className="block text-[12px] text-zinc-500">Vende en Haceme Precio desde {new Date(seller.created_at).toLocaleDateString("es-AR", { month: "long", year: "numeric" })}</span>
           </span>
           <span className="flex items-center gap-1 text-[12px] font-semibold text-hpred"><Store size={13} /> Ver todo</span>

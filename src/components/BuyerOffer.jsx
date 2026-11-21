@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { X, Clock, CheckCircle2, XCircle, MessageCircle, Copy, ShieldCheck } from "lucide-react";
 import { buyerToken, submitOffer, getMyOffers, answerCounter, offerError, savedBuyer, saveBuyer, useNow, left, hhmm, payOffer, syncOfferPayment } from "../lib/offers.js";
 import { fmt, parseMoney, moneyInput } from "../lib/format.js";
+import { ReviewBox } from "./Reviews.jsx";
 
 // Todo lo del comprador en la página del producto: el botón, la hoja para ofertar y el estado de su oferta.
 export default function BuyerOffer({ product, seller }) {
@@ -176,6 +177,7 @@ function StatusCard({ o, product, seller, attemptsLeft, onReload, onRetry }) {
     <section id="mi-oferta" className={box + " bg-emerald-50 ring-emerald-200"}>
       <p className="flex items-center gap-1.5 font-semibold text-emerald-900"><CheckCircle2 size={17} /> {o.payment_status === "pagado" ? `¡Pago aprobado! Compraste por ${fmt(o.amount)}.` : `Compra cerrada por ${fmt(o.amount)}. ¡Que lo disfrutes!`}</p>
       {o.payment_status === "pagado" && <p className="mt-1 text-[13px] text-emerald-900">{seller.name} ya recibió tu pago. Coordiná la entrega por WhatsApp.</p>}
+      <ReviewBox kind="oferta" id={o.id} />
     </section>
   );
   if (o.status === "rechazada_auto") return (
