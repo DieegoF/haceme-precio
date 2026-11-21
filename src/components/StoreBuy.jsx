@@ -76,7 +76,7 @@ export default function StoreBuy({ product: p, seller, store, price, color, onCo
         </div>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-zinc-200 bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-zinc-200 bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur lg:static lg:z-auto lg:mx-0 lg:mt-5 lg:max-w-none lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
         {soldOut ? (
           <p className="flex min-h-[52px] items-center justify-center rounded-2xl bg-zinc-100 font-semibold text-zinc-500">Sin stock por ahora</p>
         ) : ready && available > 0 ? (

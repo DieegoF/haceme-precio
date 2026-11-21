@@ -60,14 +60,15 @@ export default function ProductPage() {
   const pr = fixed ? priceFor(p, store) : { price: p.list_price, was: null, promo: false };
   const off = offPct(pr.price, pr.was);
   return (
-    <Phone className="relative pb-28">
+    <Phone wide className="relative pb-28 lg:pb-12">
       <TopBar right={<button onClick={share} className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-[12px] font-semibold"><Share2 size={13} /> {shared || "Compartir"}</button>} />
-      <div className="relative">
+      <div className="lg:grid lg:grid-cols-2 lg:gap-10 lg:px-8 lg:pt-4">
+      <div className="relative lg:sticky lg:top-4 lg:self-start lg:overflow-hidden lg:rounded-3xl">
         <Gallery key={gallery.join("|")} photos={gallery} alt={p.title} />
         {sold && <div className="absolute inset-0 flex items-center justify-center bg-white/60"><span className="rotate-[-8deg] rounded-xl bg-ink px-5 py-2 font-display text-2xl font-black text-white">VENDIDO</span></div>}
       </div>
 
-      <main className="px-5 pt-4">
+      <main className="px-5 pt-4 lg:px-0 lg:pt-0">
         <div className="flex flex-wrap gap-1.5">
           {p.liquidation && <span className="rounded-full bg-hpred px-2.5 py-0.5 text-[11px] font-bold text-white">🔥 Liquidación</span>}
           {fixed && p.collection && <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700">{p.collection}</span>}
@@ -121,9 +122,10 @@ export default function ProductPage() {
         </section>
         <p className="mt-6 text-center text-[10px] leading-relaxed text-zinc-400">Haceme Precio es una herramienta para gestionar ofertas entre partes. No actúa como intermediario financiero ni garantiza entregas.</p>
       </main>
+      </div>
 
       {sold ? (
-        <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-zinc-200 bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-zinc-200 bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur lg:static lg:mx-8 lg:mt-6 lg:max-w-sm lg:border-0 lg:bg-transparent lg:p-0">
           <Link to={`/${seller.slug}`} className="flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-ink text-[16px] font-semibold text-white">Ver otras cosas de {seller.name}</Link>
         </div>
       ) : null}
