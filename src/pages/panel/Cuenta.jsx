@@ -33,6 +33,7 @@ export default function Cuenta() {
         {!seller.is_demo && <MpConnect />}
         {seller.is_store && store && <StoreEditor seller={seller} store={store} onSaved={reload} />}
 
+        <a href="/ayuda" className="mt-4 flex min-h-[48px] items-center justify-center rounded-2xl bg-white text-[15px] font-semibold ring-1 ring-zinc-300">¿Necesitás ayuda? Preguntas y WhatsApp</a>
         <button onClick={() => nav("/demo")} className="mt-4 text-[13px] font-semibold text-hpred underline">Ver la demo completa</button>
         <div className="mt-8 border-t border-zinc-100 pt-4 text-center">
           <p className="text-[12px] text-zinc-500">Entraste como {session.user.email}</p>
