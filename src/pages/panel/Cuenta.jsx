@@ -38,6 +38,7 @@ export default function Cuenta() {
         <div className="mt-8 border-t border-zinc-100 pt-4 text-center">
           <p className="text-[12px] text-zinc-500">Entraste como {session.user.email}</p>
           <button onClick={salir} className="mt-2 text-[13px] font-semibold text-zinc-600 underline">Cerrar sesión</button>
+          <p className="mt-4 text-[12px] text-zinc-400"><a href="/terminos" className="underline">Términos</a> · <a href="/privacidad" className="underline">Privacidad</a> · <a href="/arrepentimiento" className="underline">Arrepentimiento</a> · <a href="/baja" className="underline">Darme de baja</a></p>
         </div>
       </main>
     </>

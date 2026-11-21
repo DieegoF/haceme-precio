@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { BarChart3, ClipboardList, Flag, Package, Search, Star, Users } from "lucide-react";
+import { BarChart3, ClipboardList, FileText, Flag, Package, Search, Star, Users } from "lucide-react";
 import { supabase } from "../../lib/supabase.js";
 import { fmt } from "../../lib/format.js";
 
@@ -9,7 +9,7 @@ const PLAN = { pase: "Una sola cosa", mensual: "Básico", pro: "Pro con IA", tie
 const STATUS = { prueba: "Prueba", activa: "Activa", gracia: "Pago pendiente", vencida: "Vencida", suspendida: "Suspendida", cancelada: "Cancelada" };
 const TONE = { prueba: "bg-sky-100 text-sky-800", activa: "bg-emerald-100 text-emerald-800", gracia: "bg-amber-100 text-amber-800", vencida: "bg-zinc-200 text-zinc-700", suspendida: "bg-rose-100 text-rose-700", cancelada: "bg-zinc-200 text-zinc-600" };
 const ACTION = { plan: "Cambió el plan", extender: "Extendió la prueba", estado: "Cambió el estado", pases: "Ajustó pases", pausar: "Pausó publicación", liberar: "Liberó publicación",
-  ocultar_resena: "Ocultó una reseña", mostrar_resena: "Volvió a mostrar una reseña", denuncia_resuelto: "Resolvió una denuncia", denuncia_descartado: "Descartó una denuncia" };
+  ocultar_resena: "Ocultó una reseña", mostrar_resena: "Volvió a mostrar una reseña", denuncia_resuelto: "Resolvió una denuncia", denuncia_descartado: "Descartó una denuncia", tramite_atendido: "Atendió un trámite" };
 const REASON = { estafa: "Estafa", prohibido: "No se puede vender", ofensivo: "Ofensivo", falso: "Falso", otro: "Otro" };
 const date = (d) => (d ? new Date(d).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "2-digit" }) : "—");
 
@@ -17,11 +17,12 @@ export default function Admin() {
   const [tab, setTab] = useState("resumen");
   const [denied, setDenied] = useState(false);
   const [pending, setPending] = useState(0);
+  const [tramites, setTramites] = useState(0);
   useEffect(() => { supabase.rpc("admin_overview").then(({ error }) => error && setDenied(true)); }, []);
-  useEffect(() => { supabase.rpc("admin_reports_count").then(({ data }) => setPending(data || 0)); }, [tab]);
+  useEffect(() => { supabase.rpc("admin_reports_count").then(({ data }) => setPending(data || 0)); supabase.rpc("admin_consumer_requests_count").then(({ data }) => setTramites(data || 0)); }, [tab]);
   if (denied) return <main className="px-6 py-24 text-center"><h1 className="font-display text-2xl font-extrabold">No tenés acceso</h1><Link to="/panel" className="mt-4 inline-block text-hpred underline">Volver a tu panel</Link></main>;
 
-  const tabs = [["resumen", "Resumen", BarChart3], ["denuncias", `Denuncias${pending ? ` (${pending})` : ""}`, Flag], ["vendedores", "Vendedores", Users], ["publicaciones", "Publicaciones", Package], ["resenas", "Reseñas", Star], ["registro", "Registro", ClipboardList]];
+  const tabs = [["resumen", "Resumen", BarChart3], ["denuncias", `Denuncias${pending ? ` (${pending})` : ""}`, Flag], ["vendedores", "Vendedores", Users], ["publicaciones", "Publicaciones", Package], ["resenas", "Reseñas", Star], ["tramites", `Arrepentimiento y bajas${tramites ? ` (${tramites})` : ""}`, FileText], ["registro", "Registro", ClipboardList]];
   return (
     <div className="min-h-screen bg-zinc-50 lg:flex">
       <aside className="border-b border-zinc-200 bg-white lg:min-h-screen lg:w-60 lg:border-b-0 lg:border-r">
@@ -40,6 +41,7 @@ export default function Admin() {
         {tab === "registro" && <Registro />}
         {tab === "denuncias" && <Denuncias onChange={() => supabase.rpc("admin_reports_count").then(({ data }) => setPending(data || 0))} />}
         {tab === "resenas" && <Resenas />}
+        {tab === "tramites" && <Tramites onChange={() => supabase.rpc("admin_consumer_requests_count").then(({ data }) => setTramites(data || 0))} />}
       </main>
     </div>
   );
@@ -275,6 +277,36 @@ function Resenas() {
         ))}
         {rows && !rows.length && <li className="p-6 text-center text-sm text-zinc-500">Todavía no hay reseñas.</li>}
       </ul>
+    </>
+  );
+}
+
+function Tramites({ onChange }) {
+  const [rows, setRows] = useState(null);
+  const [tick, setTick] = useState(0);
+  useEffect(() => { supabase.rpc("admin_consumer_requests").then(({ data }) => setRows(data || [])); }, [tick]);
+  const done = async (r) => { await supabase.rpc("admin_consumer_request_done", { p_id: r.id }); setTick((t) => t + 1); onChange?.(); };
+  return (
+    <>
+      <h1 className="font-display text-2xl font-extrabold">Arrepentimiento y bajas</h1>
+      <p className="text-sm text-zinc-500">Pedidos del botón de arrepentimiento y del botón de baja. Respondé por mail y marcalos como atendidos. Si es un arrepentimiento dentro de los 10 días, devolvé lo pagado desde Mercado Pago.</p>
+      <ul className="mt-4 divide-y divide-zinc-100 rounded-2xl bg-white ring-1 ring-zinc-200">
+        {rows?.map((r) => (
+          <li key={r.id} className={`flex flex-wrap items-start justify-between gap-2 p-3 text-[13px] ${r.status === "atendido" ? "opacity-60" : ""}`}>
+            <span className="min-w-0 flex-1">
+              <b className="font-mono">{r.code}</b> · <b>{r.kind === "baja" ? "Baja" : "Arrepentimiento"}</b> · {r.name} · <a href={`mailto:${r.email}?subject=Tu trámite ${r.code} en Haceme Precio`} className="underline">{r.email}</a>
+              {r.seller_slug && <> · cuenta: <a href={`/${r.seller_slug}`} target="_blank" rel="noreferrer" className="underline">{r.seller_slug}</a></>}
+              <span className="text-zinc-400"> · {new Date(r.created_at).toLocaleString("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+              {r.detail && <span className="mt-0.5 block text-zinc-700">«{r.detail}»</span>}
+            </span>
+            {r.status === "nuevo"
+              ? <button onClick={() => done(r)} className="rounded-lg bg-ink px-2.5 py-1 text-[12px] font-semibold text-white">Marcar atendido</button>
+              : <span className="text-[12px] font-semibold text-emerald-700">Atendido</span>}
+          </li>
+        ))}
+        {rows && !rows.length && <li className="p-6 text-center text-sm text-zinc-500">No hay pedidos.</li>}
+      </ul>
+      {!rows && <p className="mt-4 text-sm text-zinc-500">Cargando…</p>}
     </>
   );
 }
