@@ -5,17 +5,13 @@ import { useAuth } from "../../lib/auth.jsx";
 import { BrandBar } from "../../components/Brand.jsx";
 import StoreEditor from "./StoreEditor.jsx";
 import MpConnect from "../../components/MpConnect.jsx";
+import PlanCard from "../../components/PlanCard.jsx";
 
-const PLAN_NAME = { pase: "Una sola cosa", mensual: "Básico", pro: "Pro con IA", tienda: "Tienda" };
-const PLAN_PRICE = { pase: "$5.000 por publicación", mensual: "$10.000/mes", pro: "$30.000/mes", tienda: "$40.000/mes" };
-const STATUS = { prueba: "Prueba gratis", activa: "Activa", gracia: "Pago pendiente", vencida: "Vencida", suspendida: "Suspendida", cancelada: "Cancelada" };
-const daysLeft = (iso) => Math.max(0, Math.ceil((new Date(iso) - Date.now()) / 86400000));
 
 export default function Cuenta() {
   const { seller, account, store, reload } = useOutletContext();
   const { session } = useAuth();
   const nav = useNavigate();
-  const plan = account?.plan || "mensual";
   const salir = async () => { await supabase.auth.signOut(); nav("/", { replace: true }); };
   return (
     <>
@@ -26,22 +22,7 @@ export default function Cuenta() {
         <a href={`/${seller.slug}`} target="_blank" rel="noreferrer" className="mt-1 block font-mono text-[13px] text-hpred underline">{window.location.host}/{seller.slug}</a>
         <p className="text-[12px] text-zinc-500">Tu vidriera: todo lo que publicás, en un solo link.</p>
 
-        <section className="mt-5 rounded-2xl bg-ink p-4 text-white">
-          <div className="flex items-center justify-between">
-            <p className="text-[13px] text-zinc-300">Tu plan: <b className="text-white">{PLAN_NAME[plan]}</b></p>
-            <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold">{STATUS[account?.status] || "—"}</span>
-          </div>
-          <p className="mt-1 font-display text-2xl font-extrabold">{PLAN_PRICE[plan]}</p>
-          {account?.status === "prueba" && account.trial_ends_at && (
-            <p className="mt-1 text-[13px] text-zinc-300">Te quedan <b className="text-white">{daysLeft(account.trial_ends_at)} días</b> de prueba gratis.</p>
-          )}
-          {plan === "pase" && (
-            <p className="mt-1 text-[13px] text-zinc-300">{(account?.free_passes_used ?? 0) < 2 ? <>Te {2 - (account?.free_passes_used ?? 0) === 1 ? "queda" : "quedan"} <b className="text-white">{2 - (account?.free_passes_used ?? 0)} {2 - (account?.free_passes_used ?? 0) === 1 ? "publicación gratis" : "publicaciones gratis"}</b>.</>
-              : account.pass_credits > 0 ? <>Tenés <b className="text-white">{account.pass_credits} {account.pass_credits === 1 ? "pase" : "pases"}</b> para publicar.</>
-              : <>Ya usaste tus 2 publicaciones gratis. La próxima cuesta $5.000, o pasate al Básico ($10.000/mes, sin límite).</>}</p>
-          )}
-          <p className="mt-3 text-[11px] text-zinc-400">El cobro del plan con Mercado Pago llega pronto.</p>
-        </section>
+        <PlanCard account={account} onPaid={reload} />
 
         {account?.is_admin && <button onClick={() => nav("/admin")} className="mt-4 w-full rounded-2xl bg-zinc-900 py-3 text-[14px] font-semibold text-white">Panel de administración</button>}
         <MpConnect />
