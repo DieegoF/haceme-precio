@@ -1313,7 +1313,7 @@ export default function App() {
         .hp-slide-up { animation: hpUp .22s ease-out }
         .hp-toast { animation: hpIn .2s ease-out }
         .hp-scroll::-webkit-scrollbar { width: 0; height: 0 }
-        input[type=range] { accent-color: #C8102E }
+        input[type=range] { accent-color: #2443B5 }
         @keyframes hpPop { 0% { transform: scale(.85) rotate(-6deg); opacity: 0 } 60% { transform: scale(1.04) rotate(2deg); opacity: 1 } 100% { transform: none } }
         .hp-pop { animation: hpPop .6s ease-out both }
       `}</style>
@@ -3885,14 +3885,14 @@ function PhotoBadge({ product: p }) {
       } else {
         g.fillStyle = "#E8CFA5"; g.fillRect(0, 0, 1080, 560);
       }
-      g.fillStyle = "#1B1B1B";
+      g.fillStyle = "#1C1B19";
       g.font = "800 50px Archivo, Inter, sans-serif";
       const title = p.title.length > 34 ? p.title.slice(0, 33) + "…" : p.title;
       g.fillText(title, 70, 650);
-      g.fillStyle = "#C8102E";
+      g.fillStyle = "#2443B5";
       g.font = "900 96px Archivo, Inter, sans-serif";
       g.fillText(fmt(p.listPrice), 70, 770);
-      g.fillStyle = "#1B1B1B";
+      g.fillStyle = "#1C1B19";
       g.font = "600 40px Inter, sans-serif";
       g.fillText("Mirá más fotos y hacé tu oferta en:", 70, 860);
       g.font = "700 44px Inter, sans-serif";

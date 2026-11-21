@@ -192,7 +192,7 @@ export default function ProductForm() {
           {compareAt > price && price > 0 && <p className="col-span-2 -mt-1 text-[12px] text-zinc-600">Se muestra tachado: <s>{fmt(compareAt)}</s> → <b>{fmt(price)}</b> (−{Math.round((1 - price / compareAt) * 100)}%)</p>}
           {isStore && (
             <label className={`col-span-2 flex cursor-pointer items-start gap-3 rounded-2xl p-3 ring-2 ${f.liquidation ? "bg-hpred/5 ring-hpred" : "ring-zinc-200"}`}>
-              <input type="checkbox" checked={f.liquidation} onChange={(e) => setF((x) => ({ ...x, liquidation: e.target.checked }))} className="mt-0.5 h-5 w-5 accent-[#C8102E]" />
+              <input type="checkbox" checked={f.liquidation} onChange={(e) => setF((x) => ({ ...x, liquidation: e.target.checked }))} className="mt-0.5 h-5 w-5 accent-brand" />
               <span><span className="block text-[14px] font-bold">🔥 Es liquidación</span>
                 <span className="block text-[12px] text-zinc-500">Para rematar stock que no salió. Va a precio fijo con el precio de antes tachado y aparece en la sección «Liquidación» de tu tienda.</span></span>
             </label>

@@ -14,7 +14,7 @@ export function CartBar({ seller, store }) {
     <>
       {cart.count > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-          <button onClick={() => setOpen(true)} style={{ backgroundColor: store?.color || "#C8102E" }}
+          <button onClick={() => setOpen(true)} style={{ backgroundColor: store?.color || "#2443B5" }}
             className="flex min-h-[52px] w-full items-center justify-between rounded-2xl px-4 text-[15px] font-semibold text-white shadow-lg">
             <span className="flex items-center gap-2"><ShoppingBag size={18} /> Ver carrito ({cart.count})</span><span>{fmt(cart.total)}</span>
           </button>
@@ -34,7 +34,7 @@ export default function CartSheet({ seller, store, onClose }) {
   const [f, setF] = useState({ name: saved.name || "", contact: saved.contact || "", delivery: options[0] || "retiro", address: saved.address || "", note: "" });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const color = store?.color || "#C8102E";
+  const color = store?.color || "#2443B5";
   const input = "mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-3 text-base outline-none focus:border-zinc-900";
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
 

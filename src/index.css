@@ -3,4 +3,4 @@
 @tailwind utilities;
 
 /* En compu, fondo gris alrededor de la app (en celular no se ve). */
-@media (min-width: 1024px) { body { background: #f4f4f5; } }
+@media (min-width: 1024px) { body { background: #F2F0EC; } }

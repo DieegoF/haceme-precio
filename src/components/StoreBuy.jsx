@@ -86,7 +86,7 @@ export default function StoreBuy({ product: p, seller, store, price, color, onCo
                 <ShoppingBag size={20} /><span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-ink px-1 text-[11px] font-bold text-white">{cart.count}</span>
               </button>
             )}
-            <button type="button" onClick={addToCart} disabled={inCart >= available} style={{ backgroundColor: store?.color || "#C8102E" }}
+            <button type="button" onClick={addToCart} disabled={inCart >= available} style={{ backgroundColor: store?.color || "#2443B5" }}
               className="flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-2xl text-[16px] font-semibold text-white disabled:opacity-50">
               {added ? <><Check size={18} /> Agregado</> : inCart >= available ? "Ya tenés todo el stock" : <><ShoppingBag size={18} /> Agregar · {fmt(unit * qty)}</>}
             </button>
