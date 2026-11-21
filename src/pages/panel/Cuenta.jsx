@@ -43,6 +43,7 @@ export default function Cuenta() {
           <p className="mt-3 text-[11px] text-zinc-400">El cobro del plan con Mercado Pago llega pronto.</p>
         </section>
 
+        {account?.is_admin && <button onClick={() => nav("/admin")} className="mt-4 w-full rounded-2xl bg-zinc-900 py-3 text-[14px] font-semibold text-white">Panel de administración</button>}
         <MpConnect />
         {seller.is_store && store && <StoreEditor seller={seller} store={store} onSaved={reload} />}
 
