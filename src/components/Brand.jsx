@@ -12,6 +12,9 @@ export function BrandBar({ right }) {
 }
 
 // Contenedor con ancho de celular: la app está pensada primero para el teléfono.
-export function Phone({ children, className = "" }) {
-  return <div className={`mx-auto min-h-screen max-w-md bg-white ${className}`}>{children}</div>;
+// Marco de la app. Mobile first: columna angosta. En compu (lg), «wide» usa el ancho de pantalla;
+// las pantallas angostas (ingreso, pedido) se ven como una tarjeta centrada sobre fondo gris.
+export function Phone({ children, className = "", wide = false }) {
+  const desk = wide ? "lg:max-w-6xl" : "lg:my-8 lg:min-h-[calc(100vh-4rem)] lg:rounded-3xl lg:shadow-sm lg:ring-1 lg:ring-zinc-200";
+  return <div className={`mx-auto min-h-screen max-w-md bg-white ${desk} ${className}`}>{children}</div>;
 }

@@ -49,13 +49,13 @@ export default function SellerPage() {
   };
 
   return (
-    <Phone className={seller.store ? "pb-28" : "pb-10"}>
-      <header className="flex items-center justify-between px-4 py-3">
+    <Phone wide className={seller.store ? "pb-28" : "pb-10"}>
+      <header className="flex items-center justify-between px-4 py-3 lg:px-8">
         <Link to="/" aria-label="Haceme Precio"><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-6 w-auto" /></Link>
         <button onClick={share} className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-[12px] font-semibold"><Share2 size={13} /> {shared || "Compartir"}</button>
       </header>
       {seller.store ? <StoreHeader seller={seller} store={seller.store} /> : (
-      <section className="px-5 pt-2">
+      <section className="px-5 pt-2 lg:px-8">
         <div className="flex items-center gap-3">
           <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-ink font-display text-2xl font-black text-white">{seller.name.charAt(0).toUpperCase()}</span>
           <div className="min-w-0">
@@ -71,14 +71,14 @@ export default function SellerPage() {
       ) : (
         <>
         {seller.store && collections.length > 1 && (hasLiq || collections.length > 2) && (
-          <div className="mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+          <div className="mt-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:px-8 [scrollbar-width:none]">
             {collections.map((c) => (
               <button key={c} onClick={() => setCol(c)} style={col === c ? { backgroundColor: seller.store.color } : undefined}
                 className={`shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${col === c ? "text-white" : "bg-zinc-100 text-zinc-700"}`}>{c}</button>
             ))}
           </div>
         )}
-        <ul className="mt-4 grid grid-cols-2 gap-3 px-4">
+        <ul className="mt-4 grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 lg:grid-cols-4 lg:gap-5 lg:px-8">
           {shown.map((p) => { const pr = priceFor(p, seller.store); const off = offPct(pr.price, pr.was); return (
             <li key={p.id}>
               <Link to={`/${seller.slug}/${p.slug}`} className="block overflow-hidden rounded-2xl bg-white ring-1 ring-zinc-200">
@@ -108,8 +108,8 @@ export default function SellerPage() {
 function StoreHeader({ seller, store }) {
   return (
     <>
-      <StoreBanner banner={store.banner_url} color={store.color} className="h-32 sm:h-40" />
-      <section className="px-5 pb-2">
+      <div className="lg:px-8"><StoreBanner banner={store.banner_url} color={store.color} className="h-32 sm:h-40 lg:h-56 lg:rounded-3xl" /></div>
+      <section className="px-5 pb-2 lg:px-12">
         <div className="-mt-11 flex items-end justify-between">
           <StoreAvatar name={seller.name} logo={store.logo_url} color={store.color} size={88} />
           {seller.phone_verified && <span className="mb-1 flex items-center gap-1 rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700"><BadgeCheck size={13} /> Verificada</span>}
@@ -122,7 +122,7 @@ function StoreHeader({ seller, store }) {
         <PromoBanner store={store} className="mt-3" />
         {store.whatsapp && (
           <a href={waLink(store.whatsapp, `¡Hola ${seller.name}! Vi tu tienda en Haceme Precio 🙂`)} target="_blank" rel="noreferrer"
-            style={{ backgroundColor: store.color }} className="mt-3 flex min-h-[46px] items-center justify-center gap-1.5 rounded-2xl text-[14px] font-semibold text-white">
+            style={{ backgroundColor: store.color }} className="mt-3 flex min-h-[46px] items-center lg:max-w-sm justify-center gap-1.5 rounded-2xl text-[14px] font-semibold text-white">
             <MessageCircle size={16} /> Consultar por WhatsApp
           </a>
         )}

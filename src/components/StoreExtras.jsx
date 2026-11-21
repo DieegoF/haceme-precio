@@ -10,7 +10,7 @@ export function PromoBanner({ store, className = "" }) {
   const promo = activePromo(store, now);
   if (!promo) return null;
   return (
-    <div className={`flex items-center gap-2 rounded-2xl px-4 py-3 text-white ${className}`} style={{ backgroundColor: store.color }}>
+    <div className={`flex items-center gap-2 rounded-2xl px-4 py-3 text-white lg:max-w-xl ${className}`} style={{ backgroundColor: store.color }}>
       <Zap size={18} className="shrink-0" />
       <p className="min-w-0 flex-1 text-[14px] font-bold leading-tight">{promo.text}
         {promo.scope !== "Todo" && <span className="block text-[11px] font-medium opacity-90">en {promo.scope}</span>}</p>
@@ -30,7 +30,7 @@ export function StoreFaq({ store }) {
   const faq = store?.faq || [];
   if (!faq.length) return null;
   return (
-    <section className="mt-8 px-4">
+    <section className="mt-8 px-4 lg:max-w-3xl lg:px-8">
       <h2 className="px-1 font-display text-lg font-extrabold">Preguntas frecuentes</h2>
       <ul className="mt-2 divide-y divide-zinc-100 rounded-2xl ring-1 ring-zinc-200">
         {faq.map((f, i) => (

@@ -12,23 +12,42 @@ export default function PanelLayout() {
   const ctx = useSeller();
   const { loading, seller, error } = ctx;
   return (
-    <Phone className="relative flex flex-col">
+    <Phone wide className="relative flex flex-col lg:min-h-screen">
       {loading ? <p className="py-20 text-center text-sm text-zinc-500">Cargando tu cuenta…</p>
         : error || !seller ? <p className="m-5 rounded-2xl bg-rose-50 p-4 text-sm text-rose-800 ring-1 ring-rose-200">No pudimos cargar tu cuenta. Recargá la página; si sigue, escribinos.</p>
         : !seller.name ? <><BrandBar /><Onboarding seller={seller} account={ctx.account} onDone={ctx.reload} /></>
         : seller.is_store && !ctx.store?.ready ? <StoreSetup seller={seller} store={ctx.store} onDone={ctx.reload} />
         : (
-          <>
-            <div className="flex-1 pb-24"><Outlet context={ctx} /></div>
-            <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto grid max-w-md grid-cols-4 border-t border-zinc-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+          <div className="flex-1 lg:flex">
+            <aside className="hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-60 lg:shrink-0 lg:flex-col lg:border-r lg:border-zinc-200 lg:px-3 lg:py-5">
+              <p className="px-3 font-display text-lg font-black">haceme <span className="text-hpred">precio</span></p>
+              <p className="truncate px-3 text-[12px] font-semibold text-zinc-500">{seller.name}</p>
+              <nav className="mt-5 flex flex-col gap-1">
+                {seller.is_store ? <SideTab to="/panel" end Icon={ShoppingBag} label="Pedidos" /> : <SideTab to="/panel" end Icon={Inbox} label="Ofertas" />}
+                <SideTab to="/panel/productos" Icon={Package} label="Productos" />
+                <SideTab to="/panel/cargar" Icon={Plus} label="Cargar producto" />
+                <SideTab to="/panel/cuenta" Icon={User} label="Mi cuenta" />
+              </nav>
+              <a href={`/${seller.slug}`} target="_blank" rel="noreferrer" className="mt-auto rounded-xl px-3 py-2 text-[13px] font-semibold text-hpred hover:bg-zinc-50">Ver mi {seller.is_store ? "tienda" : "vidriera"} ↗</a>
+            </aside>
+            <div className="flex-1 pb-24 lg:mx-auto lg:max-w-3xl lg:pb-10"><Outlet context={ctx} /></div>
+            <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto grid max-w-md grid-cols-4 lg:hidden border-t border-zinc-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
               {seller.is_store ? <Tab to="/panel" end Icon={ShoppingBag} label="Pedidos" /> : <Tab to="/panel" end Icon={Inbox} label="Ofertas" />}
               <Tab to="/panel/productos" Icon={Package} label="Productos" />
               <Tab to="/panel/cargar" Icon={Plus} label="Cargar" strong />
               <Tab to="/panel/cuenta" Icon={User} label="Mi cuenta" />
             </nav>
-          </>
+          </div>
         )}
     </Phone>
+  );
+}
+
+function SideTab({ to, end, Icon, label }) {
+  return (
+    <NavLink to={to} end={end} className={({ isActive }) => `flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[14px] font-semibold ${isActive ? "bg-ink text-white" : "text-zinc-600 hover:bg-zinc-100"}`}>
+      <Icon size={18} /> {label}
+    </NavLink>
   );
 }
 
