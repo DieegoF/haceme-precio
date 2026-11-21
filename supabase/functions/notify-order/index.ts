@@ -30,25 +30,25 @@ Deno.serve(async (req) => {
   const units = items.reduce((t, i) => t + i.qty, 0);
   const rows = items.map((i) => {
     const v = [i.color, i.size && `talle ${i.size}`].filter(Boolean).join(", ");
-    return `<tr><td style="padding:6px 0;font-size:14px">${i.qty} × ${esc(i.title)}${v ? `<br><span style="color:#71717a;font-size:12px">${esc(v)}</span>` : ""}</td>
+    return `<tr><td style="padding:6px 0;font-size:14px">${i.qty} × ${esc(i.title)}${v ? `<br><span style="color:#6B675F;font-size:12px">${esc(v)}</span>` : ""}</td>
       <td style="padding:6px 0;font-size:14px;text-align:right;white-space:nowrap">${money(i.unit_price * i.qty)}</td></tr>`;
   }).join("");
   const entrega = o.delivery === "envio" ? `Envío a: <b>${esc(o.address)}</b>` : "Retira en el local";
 
-  const html = `<!doctype html><html><body style="margin:0;background:#FBF5EC;font-family:Arial,Helvetica,sans-serif;color:#1B1B1B">
+  const html = `<!doctype html><html><body style="margin:0;background:#FAF9F7;font-family:Arial,Helvetica,sans-serif;color:#1C1B19">
   <div style="max-width:480px;margin:0 auto;padding:24px">
-    <p style="font-weight:900;font-size:18px;margin:0 0 16px">haceme <span style="color:#C8102E">precio</span></p>
-    <div style="background:#fff;border-radius:16px;padding:20px;border:1px solid #E8CFA5">
-      <p style="font-size:12px;font-weight:bold;color:#71717a;margin:0">PEDIDO #${esc(o.code)}</p>
+    <p style="font-weight:800;font-size:18px;margin:0 0 16px">Haceme <span style="color:#2443B5">Precio</span></p>
+    <div style="background:#fff;border-radius:16px;padding:20px;border:1px solid #E5E2DC">
+      <p style="font-size:12px;font-weight:bold;color:#6B675F;margin:0">PEDIDO #${esc(o.code)}</p>
       <h1 style="font-size:20px;margin:4px 0 8px">${esc(o.buyer_name)} te hizo un pedido de ${money(o.total)}</h1>
       <table style="width:100%;border-collapse:collapse;margin:8px 0 12px">${rows}
         <tr><td style="padding-top:8px;border-top:1px solid #eee;font-weight:bold">Total</td><td style="padding-top:8px;border-top:1px solid #eee;font-weight:bold;text-align:right">${money(o.total)}</td></tr></table>
       <p style="font-size:14px;margin:0 0 6px">${entrega}</p>
       ${o.note ? `<p style="font-size:14px;margin:0 0 6px">Nota: ${esc(o.note)}</p>` : ""}
-      <p style="font-size:14px;line-height:1.5;margin:12px 0 20px;color:#3f3f46">Le guardamos el stock por <b>24 h</b>. Confirmalo desde tu panel y escribile por WhatsApp para coordinar el pago y la entrega.</p>
-      <a href="${cfg?.value ?? ""}/panel" style="display:inline-block;background:#C8102E;color:#fff;text-decoration:none;font-weight:bold;padding:14px 22px;border-radius:14px">Ver el pedido</a>
+      <p style="font-size:14px;line-height:1.5;margin:12px 0 20px;color:#45423D">Le guardamos el stock por <b>24 h</b>. Confirmalo desde tu panel y escribile por WhatsApp para coordinar el pago y la entrega.</p>
+      <a href="${cfg?.value ?? ""}/panel" style="display:inline-block;background:#2443B5;color:#fff;text-decoration:none;font-weight:bold;padding:14px 22px;border-radius:14px">Ver el pedido</a>
     </div>
-    <p style="font-size:12px;color:#71717a;margin-top:16px">Recordá verificar el dinero acreditado en tu cuenta antes de entregar. No te guíes solo por capturas.</p>
+    <p style="font-size:12px;color:#6B675F;margin-top:16px">Recordá verificar el dinero acreditado en tu cuenta antes de entregar. No te guíes solo por capturas.</p>
   </div></body></html>`;
 
   const r = await fetch("https://api.resend.com/emails", {

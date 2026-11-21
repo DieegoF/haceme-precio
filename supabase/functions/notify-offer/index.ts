@@ -56,16 +56,16 @@ Deno.serve(async (req) => {
     },
   }[kind];
 
-  const html = `<!doctype html><html><body style="margin:0;background:#FBF5EC;font-family:Arial,Helvetica,sans-serif;color:#1B1B1B">
+  const html = `<!doctype html><html><body style="margin:0;background:#FAF9F7;font-family:Arial,Helvetica,sans-serif;color:#1C1B19">
   <div style="max-width:480px;margin:0 auto;padding:24px">
-    <p style="font-weight:900;font-size:18px;margin:0 0 16px">haceme <span style="color:#C8102E">precio</span></p>
-    <div style="background:#fff;border-radius:16px;padding:20px;border:1px solid #E8CFA5">
+    <p style="font-weight:800;font-size:18px;margin:0 0 16px">Haceme <span style="color:#2443B5">Precio</span></p>
+    <div style="background:#fff;border-radius:16px;padding:20px;border:1px solid #E5E2DC">
       ${p.photos?.[0] ? `<img src="${esc(p.photos[0])}" alt="" width="96" height="96" style="border-radius:12px;object-fit:cover;display:block;margin-bottom:12px">` : ""}
       <h1 style="font-size:20px;margin:0 0 8px">${copy.title}</h1>
-      <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#3f3f46">${copy.body}</p>
-      <a href="${panel}" style="display:inline-block;background:#C8102E;color:#fff;text-decoration:none;font-weight:bold;padding:14px 22px;border-radius:14px">${copy.cta}</a>
+      <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#45423D">${copy.body}</p>
+      <a href="${panel}" style="display:inline-block;background:#2443B5;color:#fff;text-decoration:none;font-weight:bold;padding:14px 22px;border-radius:14px">${copy.cta}</a>
     </div>
-    <p style="font-size:12px;color:#71717a;margin-top:16px">Recordá verificar el dinero acreditado en tu cuenta antes de entregar. No te guíes solo por capturas.</p>
+    <p style="font-size:12px;color:#6B675F;margin-top:16px">Recordá verificar el dinero acreditado en tu cuenta antes de entregar. No te guíes solo por capturas.</p>
   </div></body></html>`;
 
   const r = await fetch("https://api.resend.com/emails", {

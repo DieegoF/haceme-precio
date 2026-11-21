@@ -36,7 +36,7 @@ export default function Demo() {
 
         <p className="mt-6 text-[12px] text-zinc-500">Es una demo compartida: lo que hagas lo pueden ver otras personas, así que no pongas datos reales. Todo vuelve a como estaba cada noche.</p>
         <Link to="/ingresar" className="mt-6 flex min-h-[52px] items-center justify-center rounded-2xl bg-hpred text-[16px] font-semibold text-white">Crear mi cuenta gratis</Link>
-        <p className="mt-2 text-center text-[12px] text-zinc-500">15 días de prueba, sin tarjeta.</p>
+        <p className="mt-2 text-center text-[12px] text-zinc-500">Gratis para empezar · sin tarjeta.</p>
       </main>
     </Phone>
   );
