@@ -54,7 +54,7 @@ export default function ProductPage() {
   );
 
   const sold = p.status === "vendida";
-  const fixed = p.mode === "fijo" || Boolean(seller.store); // la tienda nunca recibe ofertas
+  const fixed = p.mode === "fijo"; // en la tienda cada producto es precio fijo o «acepto ofertas»
   const store = seller.store;
   const gallery = color && p.color_photos?.[color]?.length ? p.color_photos[color] : p.photos;
   const pr = fixed ? priceFor(p, store) : { price: p.list_price, was: null, promo: false };

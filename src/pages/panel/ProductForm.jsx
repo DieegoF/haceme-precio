@@ -45,7 +45,7 @@ export default function ProductForm() {
         autoOn: Boolean(r?.auto_accept_pct), autoPct: r?.auto_accept_pct || 95, condition: data.condition || "Usado",
         category: data.category || "", description: data.description || "", location: data.location || "",
         shipping: data.shipping_enabled, shippingNote: data.shipping_note || "", stock: data.stock,
-        mode: isStore ? "fijo" : data.mode, compareAt: data.compare_at ? moneyInput(data.compare_at) : "", collection: data.collection || "", liquidation: Boolean(data.liquidation),
+        mode: data.mode, compareAt: data.compare_at ? moneyInput(data.compare_at) : "", collection: data.collection || "", liquidation: Boolean(data.liquidation),
       });
       if (data.has_variants) setVariants(fromVariants(data.product_variants || []));
       const pc = {};
@@ -61,7 +61,7 @@ export default function ProductForm() {
   const isPase = account?.plan === "pase";
   const fixed = f.mode === "fijo";
   const compareAt = parseMoney(f.compareAt);
-  const varList = isStore ? toVariants(variants) : null;
+  const varList = isStore && f.mode === "fijo" ? toVariants(variants) : null;
 
   const addPhotos = async (e) => {
     const files = [...(e.target.files || [])].slice(0, MAX_PHOTOS - photos.length);
@@ -102,7 +102,7 @@ export default function ProductForm() {
       list_price: price, photos, stock: isPase ? 1 : Math.max(isStore ? 0 : 1, Number(f.stock) || 0), location: isStore ? null : f.location.trim() || null,
       shipping_enabled: isStore ? false : f.shipping, shipping_note: !isStore && f.shipping ? f.shippingNote.trim() || "A coordinar" : null,
       mode: f.mode, compare_at: fixed && compareAt ? compareAt : "", collection: isStore ? f.collection.trim() || null : null,
-      liquidation: isStore && f.liquidation, color_photos: colorPhotos,
+      liquidation: isStore && fixed && f.liquidation, color_photos: colorPhotos,
     };
     const r = fixed ? null : { floor_price: floor, auto_accept_pct: f.autoOn ? f.autoPct : "" };
     const { error } = await supabase.rpc("save_product", { p_id: editing ? id : null, p, r, v: varList });
@@ -129,7 +129,7 @@ export default function ProductForm() {
             <button type="button" onClick={() => dropPhoto(url)} aria-label="Sacar foto" className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white"><X size={14} /></button>
             {i === 0 ? <span className="absolute bottom-1 left-1 rounded-full bg-hpred px-2 py-0.5 text-[10px] font-bold text-white">Portada</span>
               : <button type="button" onClick={() => makeCover(url)} className="absolute bottom-1 left-1 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold">Hacer portada</button>}
-            {isStore && variants.colors.length > 0 && (
+            {isStore && fixed && variants.colors.length > 0 && (
               <select value={photoColor[url] || ""} onChange={(e) => setPhotoColor((m) => ({ ...m, [url]: e.target.value }))} aria-label="Color de esta foto"
                 className="absolute left-1 top-1 max-w-[70%] rounded-full bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold">
                 <option value="">Todos</option>
@@ -155,10 +155,24 @@ export default function ProductForm() {
       {/* capture="environment" abre la cámara trasera directo; la galería permite elegir varias a la vez */}
       <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={addPhotos} aria-label="Sacar foto con la cámara" />
       <input ref={galleryRef} type="file" accept="image/*" multiple className="hidden" onChange={addPhotos} aria-label="Elegir fotos de la galería" />
-      {isStore && variants.colors.length > 0 && photos.length > 0 && <p className="mt-1.5 text-[11px] text-zinc-500">Arriba de cada foto elegí de qué color es: al elegir un color, tu cliente ve esas fotos.</p>}
+      {isStore && fixed && variants.colors.length > 0 && photos.length > 0 && <p className="mt-1.5 text-[11px] text-zinc-500">Arriba de cada foto elegí de qué color es: al elegir un color, tu cliente ve esas fotos.</p>}
 
       <label className={label} htmlFor="title">¿Qué vendés?</label>
       <input id="title" maxLength={80} value={f.title} onChange={set("title")} placeholder={isStore ? "Ej: Remera oversize algodón" : "Ej: Bici rodado 26 con cambios"} className={input} />
+
+      {isStore && (
+        <>
+          <p className={label}>¿Cómo lo vendés?</p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {[["fijo", "🏷️ Precio fijo", "Lo compran directo al precio que pusiste."], ["oferta", "🤝 Acepto ofertas", "Te pueden ofertar (ideal para usados o feria americana)."]].map(([m, t, d]) => (
+              <button type="button" key={m} onClick={() => setF((x) => ({ ...x, mode: m, condition: m === "oferta" && x.condition === "Nuevo" ? "Usado" : x.condition }))}
+                className={`rounded-2xl p-3 text-left ring-2 ${f.mode === m ? "bg-ink/5 ring-ink" : "ring-zinc-200"}`}>
+                <span className="block text-[14px] font-bold">{t}</span><span className="mt-0.5 block text-[12px] text-zinc-500">{d}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       {fixed ? (
         <div className="grid grid-cols-2 gap-3">
@@ -214,9 +228,22 @@ export default function ProductForm() {
         <>
           <p className={label}>Categoría del producto</p>
           <CategoryPicker sellerId={seller.id} value={f.collection} onChange={(c) => setF((x) => ({ ...x, collection: c }))} />
-          <p className={label}>Talles, colores y stock</p>
-          <div className="mt-2"><VariantBuilder value={variants} onChange={setVariants} /></div>
-          {!varList && <p className="mt-1 text-[12px] text-zinc-500">Si no tiene talles ni colores, dejá todo vacío y poné la cantidad abajo.</p>}
+          {fixed ? (
+            <>
+              <p className={label}>Talles, colores y stock</p>
+              <div className="mt-2"><VariantBuilder value={variants} onChange={setVariants} /></div>
+              {!varList && <p className="mt-1 text-[12px] text-zinc-500">Si no tiene talles ni colores, dejá todo vacío y poné la cantidad abajo.</p>}
+            </>
+          ) : (
+            <>
+              <p className={label}>Estado</p>
+              <div className="mt-1 flex gap-2">
+                {CONDITIONS.map((c) => (
+                  <button type="button" key={c} onClick={() => setF((x) => ({ ...x, condition: c }))} className={`flex-1 rounded-xl py-2.5 text-sm font-semibold ${f.condition === c ? "bg-ink text-white" : "bg-zinc-100"}`}>{c}</button>
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
 

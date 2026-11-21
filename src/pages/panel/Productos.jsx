@@ -100,6 +100,7 @@ function Item({ p, sellerSlug, onStatus, onRemove, onCopy }) {
           </div>
           <p className="mt-0.5 text-[16px] font-extrabold">{fmt(p.list_price)}</p>
           {r && <p className="flex items-center gap-1 text-[12px] text-zinc-500"><Lock size={11} /> Mínimo {fmt(r.floor_price)}{r.auto_accept_pct ? <> · <Zap size={11} /> sola desde {fmt(Math.round(p.list_price * r.auto_accept_pct / 100))}</> : null}</p>}
+          {p.mode === "oferta" && seller?.is_store && <p className="text-[12px] text-zinc-500">🤝 Acepta ofertas</p>}
           {p.mode === "fijo" && <p className="text-[12px] text-zinc-500">{p.liquidation ? "🔥 Liquidación" : "Precio fijo"} · {p.stock > 0 ? `${p.stock} en stock` : <b className="text-hpred">sin stock</b>}</p>}
           {p.mode !== "fijo" && p.stock > 1 && <p className="text-[12px] text-zinc-500">{p.stock} unidades</p>}
         </div>
