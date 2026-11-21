@@ -44,7 +44,8 @@ export default function StoreEditor({ seller, store, onSaved }) {
       pickup: f.pickup, shipping_enabled: f.shipping_enabled, shipping_note: f.shipping_enabled ? f.shipping_note?.trim() || "A coordinar" : null,
     }).eq("seller_id", seller.id);
     setBusy(false);
-    setMsg(error ? (error.message.includes("PROMO") ? "Revisá la promo: texto de 3 a 60 letras, descuento entre 5% y 70% y una fecha de fin."
+    setMsg(error ? (error.message.includes("DEMO:") ? "En la demo no se puede cambiar la tienda. Creá tu cuenta gratis para armar la tuya."
+      : error.message.includes("PROMO") ? "Revisá la promo: texto de 3 a 60 letras, descuento entre 5% y 70% y una fecha de fin."
       : error.message.includes("FAQ") ? "Revisá las preguntas: cada una necesita pregunta y respuesta." : "No pudimos guardar. Revisá los datos.") : "Guardado ✓");
     if (!error) onSaved();
   };

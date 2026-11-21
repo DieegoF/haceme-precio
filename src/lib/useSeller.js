@@ -10,7 +10,7 @@ export function useSeller() {
   const load = useCallback(async () => {
     if (!uid) return;
     const [s, a, st] = await Promise.all([
-      supabase.from("sellers").select("id, name, slug, is_store, phone_verified").eq("id", uid).maybeSingle(),
+      supabase.from("sellers").select("id, name, slug, is_store, is_demo, phone_verified").eq("id", uid).maybeSingle(),
       supabase.from("seller_accounts").select("plan, status, trial_ends_at, period_end, cancel_at, free_pass_used_at, free_passes_used, pass_credits, is_admin").eq("seller_id", uid).maybeSingle(),
       supabase.from("stores").select("*").eq("seller_id", uid).maybeSingle(),
     ]);

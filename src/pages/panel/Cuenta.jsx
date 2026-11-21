@@ -22,10 +22,15 @@ export default function Cuenta() {
         <a href={`/${seller.slug}`} target="_blank" rel="noreferrer" className="mt-1 block font-mono text-[13px] text-hpred underline">{window.location.host}/{seller.slug}</a>
         <p className="text-[12px] text-zinc-500">Tu vidriera: todo lo que publicás, en un solo link.</p>
 
-        <PlanCard account={account} onPaid={reload} />
+        {seller.is_demo ? (
+          <section className="mt-5 rounded-2xl bg-amber-50 p-4 text-[13px] text-amber-950 ring-1 ring-amber-200">
+            <p className="font-bold">Cuenta de prueba</p>
+            <p className="mt-1">Acá vas a ver tu plan, hasta cuándo lo tenés y el botón para pagarlo con Mercado Pago. También vas a conectar tu Mercado Pago para cobrar directo.</p>
+          </section>
+        ) : <PlanCard account={account} onPaid={reload} />}
 
         {account?.is_admin && <button onClick={() => nav("/admin")} className="mt-4 w-full rounded-2xl bg-zinc-900 py-3 text-[14px] font-semibold text-white">Panel de administración</button>}
-        <MpConnect />
+        {!seller.is_demo && <MpConnect />}
         {seller.is_store && store && <StoreEditor seller={seller} store={store} onSaved={reload} />}
 
         <button onClick={() => nav("/demo")} className="mt-4 text-[13px] font-semibold text-hpred underline">Ver la demo completa</button>

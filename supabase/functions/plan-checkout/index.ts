@@ -20,6 +20,8 @@ Deno.serve(async (req) => {
   const { data: u } = await admin.auth.getUser(jwt);
   const uid = u?.user?.id;
   if (!uid) return json({ error: "SIN_SESION" }, 401);
+  const { data: me } = await admin.from("sellers").select("is_demo").eq("id", uid).maybeSingle();
+  if (me?.is_demo) return json({ error: "DEMO" }, 403); // las cuentas demo no pagan nada
   const body = await req.json().catch(() => ({}));
 
   if (body.action === "sync") {

@@ -17,16 +17,19 @@ import NotFound from "./pages/NotFound.jsx";
 import ProductPage from "./pages/public/ProductPage.jsx";
 import SellerPage from "./pages/public/SellerPage.jsx";
 import Status from "./Status.jsx";
+import DemoStrip from "./components/DemoStrip.jsx";
 import { adoptBuyerToken } from "./lib/offers.js";
 
 adoptBuyerToken(); // si llegó con su link personal de oferta (?o=…), recupera sus ofertas en este navegador
 
 // La demo es pesada: se carga solo si alguien la abre.
 const Demo = lazy(() => import("./pages/Demo.jsx"));
+const Prototipo = lazy(() => import("./prototype/App.jsx"));
 
 createRoot(document.getElementById("root")).render(
   <AuthProvider>
     <BrowserRouter>
+      <DemoStrip />
       <Suspense fallback={<p className="p-8 text-center text-sm text-zinc-500">Cargando…</p>}>
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -41,6 +44,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="*" element={<Navigate to="/panel" replace />} />
           </Route>
           <Route path="/demo" element={<Demo />} />
+          <Route path="/demo/prototipo" element={<Prototipo />} />
           <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
           <Route path="/estado" element={<Status />} />
           <Route path="/pedido/:id" element={<OrderPage />} />
