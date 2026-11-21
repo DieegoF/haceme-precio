@@ -13,7 +13,8 @@ const money = (n: number) => n.toFixed(2);
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "method" }, 405);
-  const { action, order_id, token } = await req.json().catch(() => ({}));
+  const { action, order_id, offer_id, token } = await req.json().catch(() => ({}));
+  if (action === "pay_offer" || action === "sync_offer") return offerFlow(action, offer_id, token);
   if (!UUID.test(order_id ?? "") || !UUID.test(token ?? "")) return json({ error: "DATOS" }, 400);
 
   const { data: o } = await admin.from("orders")
@@ -56,3 +57,39 @@ Deno.serve(async (req) => {
   const { data: saved } = await admin.from("orders").select("mp_checkout_url").eq("id", o.id).single();
   return json({ url: saved?.mp_checkout_url ?? url });
 });
+
+// Tratos de ofertas: el comprador paga el precio acordado de una oferta «aceptada».
+async function offerFlow(action: string, offerId: string, token: string) {
+  if (!UUID.test(offerId ?? "") || !UUID.test(token ?? "")) return json({ error: "DATOS" }, 400);
+  const { data: o } = await admin.from("offers")
+    .select("id, seller_id, amount, status, payment_status, close_by, mp_order_id, mp_checkout_url, products(title, slug), sellers(slug)")
+    .eq("id", offerId).eq("buyer_token", token).maybeSingle();
+  if (!o) return json({ error: "NO_ENCONTRADA" }, 404);
+  if (action === "sync_offer") return json({ result: o.mp_order_id ? await syncMpOrder(admin, o.mp_order_id) : "SIN_ORDER" });
+  if (o.status !== "aceptada" || o.payment_status !== "pendiente") return json({ error: "NO_SE_PAGA_ASI" }, 400);
+  const minutes = Math.floor((new Date(o.close_by).getTime() - Date.now()) / 60000);
+  if (minutes < 3) return json({ error: "VENCIDO" }, 400);
+  if (o.mp_checkout_url) return json({ url: o.mp_checkout_url });
+
+  const { data: c } = await admin.from("mp_connections").select("access_token").eq("seller_id", o.seller_id).maybeSingle();
+  if (!c) return json({ error: "SIN_MP" }, 400);
+  const { data: cfg } = await admin.from("app_settings").select("value").eq("key", "app_url").single();
+  const back = `${cfg!.value}/${(o as any).sellers.slug}/${(o as any).products.slug}?mp=volver`;
+  const title = String((o as any).products.title).slice(0, 120);
+  const r = await fetch("https://api.mercadopago.com/v1/orders", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${c.access_token}`, "Content-Type": "application/json", accept: "application/json", "X-Idempotency-Key": crypto.randomUUID() },
+    body: JSON.stringify({
+      type: "online", processing_mode: "manual", total_amount: money(o.amount), external_reference: o.id,
+      description: `Trato: ${title}`, expiration_time: `PT${minutes}M`,
+      items: [{ title, unit_price: money(o.amount), quantity: 1 }],
+      config: { online: { success_url: back, failure_url: back, pending_url: back, auto_return: "all" } },
+    }),
+  });
+  const m = await r.json().catch(() => ({}));
+  const url = m.checkout_url ?? m.config?.online?.checkout_url;
+  if (!r.ok || !m.id || !url) return json({ error: "MP_RECHAZO", detail: m?.message || m?.errors || r.status }, 502);
+  await admin.from("offers").update({ mp_order_id: m.id, mp_checkout_url: url }).eq("id", o.id).is("mp_order_id", null);
+  const { data: saved } = await admin.from("offers").select("mp_checkout_url").eq("id", o.id).single();
+  return json({ url: saved?.mp_checkout_url ?? url });
+}

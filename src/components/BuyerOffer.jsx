@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { X, Clock, CheckCircle2, XCircle, MessageCircle, Copy, ShieldCheck } from "lucide-react";
-import { buyerToken, submitOffer, getMyOffers, answerCounter, offerError, savedBuyer, saveBuyer, useNow, left, hhmm } from "../lib/offers.js";
+import { buyerToken, submitOffer, getMyOffers, answerCounter, offerError, savedBuyer, saveBuyer, useNow, left, hhmm, payOffer, syncOfferPayment } from "../lib/offers.js";
 import { fmt, parseMoney, moneyInput } from "../lib/format.js";
 
 // Todo lo del comprador en la página del producto: el botón, la hoja para ofertar y el estado de su oferta.
@@ -11,6 +11,14 @@ export default function BuyerOffer({ product, seller }) {
   useEffect(() => { load(); }, [load]);
 
   const last = offers?.[0];
+  const waitingPay = last?.status === "aceptada" && last.can_pay_mp && last.payment_status === "pendiente";
+  // Esperando el pago (o volviendo de MP): el servidor le pregunta a MP y recargamos.
+  useEffect(() => {
+    if (!waitingPay) return undefined;
+    const tick = async () => { await syncOfferPayment(last.id); load(); };
+    if (new URLSearchParams(window.location.search).get("mp")) tick();
+    const t = setInterval(tick, 10000); return () => clearInterval(t);
+  }, [waitingPay, last?.id, load]);
   const live = last && ["pendiente", "contraoferta"].includes(last.status);
   useEffect(() => { if (!live) return; const t = setInterval(load, 8000); return () => clearInterval(t); }, [live, load]);
 
@@ -105,6 +113,20 @@ function SaveLink({ product }) {
   );
 }
 
+function PayButton({ o }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const pay = async () => { setBusy(true); setErr(""); try { window.location.href = await payOffer(o.id); } catch { setErr("No pudimos abrir Mercado Pago. Probá de nuevo en un momento."); setBusy(false); } };
+  return (
+    <>
+      <button disabled={busy} onClick={pay} className="mt-3 flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-[#009EE3] text-[16px] font-semibold text-white disabled:opacity-50">
+        {busy ? "Abriendo Mercado Pago…" : `Pagar ${fmt(o.amount)} con Mercado Pago`}
+      </button>
+      {err && <p className="mt-2 text-[13px] font-semibold text-rose-700">{err}</p>}
+    </>
+  );
+}
+
 function StatusCard({ o, product, seller, attemptsLeft, onReload, onRetry }) {
   const now = useNow();
   const [busy, setBusy] = useState(false);
@@ -138,14 +160,22 @@ function StatusCard({ o, product, seller, attemptsLeft, onReload, onRetry }) {
   if (o.status === "aceptada") return (
     <section id="mi-oferta" className={box + " bg-emerald-50 ring-emerald-200"}>
       <p className="flex items-center gap-1.5 font-display text-lg font-extrabold text-emerald-900"><CheckCircle2 size={20} /> ¡Trato hecho por {fmt(o.amount)}!</p>
-      <p className="mt-1 text-[13px] text-emerald-900">{seller.name} te va a escribir por <b>WhatsApp</b> al número que dejaste para coordinar la entrega y el pago. El trato queda reservado hasta las <b>{hhmm(o.close_by)} h</b>.</p>
+      {o.can_pay_mp ? (
+        <>
+          <p className="mt-1 text-[13px] text-emerald-900">Pagalo ahora con <b>Mercado Pago</b> para asegurarlo: la plata va directo a {seller.name}. El trato queda reservado hasta las <b>{hhmm(o.close_by)} h</b>.</p>
+          <PayButton o={o} />
+        </>
+      ) : (
+        <p className="mt-1 text-[13px] text-emerald-900">{seller.name} te va a escribir por <b>WhatsApp</b> al número que dejaste para coordinar la entrega y el pago. El trato queda reservado hasta las <b>{hhmm(o.close_by)} h</b>.</p>
+      )}
       <button onClick={copy} className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-2xl bg-white text-[14px] font-semibold ring-1 ring-emerald-300"><Copy size={15} /> {copied ? "Resumen copiado ✓" : "Copiar resumen del trato"}</button>
       <p className="mt-3 flex gap-1.5 text-[12px] text-emerald-900"><ShieldCheck size={14} className="mt-px shrink-0" /> Encontrate en un lugar público y revisá el producto antes de pagar.</p>
     </section>
   );
   if (o.status === "vendida") return (
     <section id="mi-oferta" className={box + " bg-emerald-50 ring-emerald-200"}>
-      <p className="flex items-center gap-1.5 font-semibold text-emerald-900"><CheckCircle2 size={17} /> Compra cerrada por {fmt(o.amount)}. ¡Que lo disfrutes!</p>
+      <p className="flex items-center gap-1.5 font-semibold text-emerald-900"><CheckCircle2 size={17} /> {o.payment_status === "pagado" ? `¡Pago aprobado! Compraste por ${fmt(o.amount)}.` : `Compra cerrada por ${fmt(o.amount)}. ¡Que lo disfrutes!`}</p>
+      {o.payment_status === "pagado" && <p className="mt-1 text-[13px] text-emerald-900">{seller.name} ya recibió tu pago. Coordiná la entrega por WhatsApp.</p>}
     </section>
   );
   if (o.status === "rechazada_auto") return (
