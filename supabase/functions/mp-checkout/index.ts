@@ -40,16 +40,19 @@ Deno.serve(async (req) => {
   const items = (o.order_items as any[]).map((i) => ({ title: String(i.title).slice(0, 120), unit_price: money(i.unit_price), quantity: i.qty }));
   const r = await fetch("https://api.mercadopago.com/v1/orders", {
     method: "POST",
-    headers: { Authorization: `Bearer ${c.access_token}`, "Content-Type": "application/json", accept: "application/json", "X-Idempotency-Key": o.id },
+    headers: { Authorization: `Bearer ${c.access_token}`, "Content-Type": "application/json", accept: "application/json", "X-Idempotency-Key": crypto.randomUUID() },
     body: JSON.stringify({
       type: "online", processing_mode: "manual", total_amount: money(o.total), external_reference: o.id,
       description: `Pedido #${o.code}`, expiration_time: `PT${minutes}M`, items,
-      config: { notification_url: `${conf.functions_url}/mp-webhook`, online: { success_url: back, failure_url: back, pending_url: back, auto_return: "all" } },
+      config: { online: { // los avisos llegan por el webhook configurado en la app de MP
+         success_url: back, failure_url: back, pending_url: back, auto_return: "all" } },
     }),
   });
   const m = await r.json().catch(() => ({}));
   const url = m.checkout_url ?? m.config?.online?.checkout_url;
   if (!r.ok || !m.id || !url) return json({ error: "MP_RECHAZO", detail: m?.message || m?.errors || r.status }, 502);
   await admin.from("orders").update({ mp_order_id: m.id, mp_checkout_url: url }).eq("id", o.id).is("mp_order_id", null);
-  return json({ url });
+  // Si otro intento se guardó primero, usamos ese (el que el servidor va a seguir).
+  const { data: saved } = await admin.from("orders").select("mp_checkout_url").eq("id", o.id).single();
+  return json({ url: saved?.mp_checkout_url ?? url });
 });
