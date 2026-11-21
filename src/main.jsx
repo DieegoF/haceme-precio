@@ -10,6 +10,7 @@ import Productos from "./pages/panel/Productos.jsx";
 import ProductForm from "./pages/panel/ProductForm.jsx";
 import Cuenta from "./pages/panel/Cuenta.jsx";
 import Inicio from "./pages/panel/Inicio.jsx";
+import Admin from "./pages/admin/Admin.jsx";
 import MpConectado from "./pages/panel/MpConectado.jsx";
 import OrderPage from "./pages/public/OrderPage.jsx";
 import NotFound from "./pages/NotFound.jsx";
@@ -37,6 +38,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="*" element={<Navigate to="/panel" replace />} />
           </Route>
           <Route path="/demo" element={<Demo />} />
+          <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
           <Route path="/estado" element={<Status />} />
           <Route path="/pedido/:id" element={<OrderPage />} />
           {/* Links públicos: /vendedor y /vendedor/producto (van al final para no pisar las rutas de la app) */}
