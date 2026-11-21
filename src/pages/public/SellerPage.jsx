@@ -87,6 +87,7 @@ export default function SellerPage() {
                   {p.status === "vendida" ? <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">Vendido</span>
                     : p.mode === "fijo" && p.stock <= 0 ? <span className="absolute left-2 top-2 rounded-full bg-zinc-700 px-2 py-0.5 text-[10px] font-bold text-white">Sin stock</span>
                     : p.liquidation ? <span className="absolute left-2 top-2 rounded-full bg-hpred px-2 py-0.5 text-[10px] font-bold text-white">🔥 Liquidación</span>
+                    : seller.store && p.mode === "oferta" ? <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">🤝 Acepta ofertas</span>
                     : off > 0 ? <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold text-white ${pr.promo ? "bg-hpred" : "bg-ink"}`}>-{off}%</span> : null}
                 </div>
                 <div className="p-2.5">
