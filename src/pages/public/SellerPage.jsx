@@ -8,6 +8,7 @@ import { fmt } from "../../lib/format.js";
 import { Phone } from "../../components/Brand.jsx";
 import { LOGO_HORIZ } from "../../prototype/brand.js";
 import NotFound from "../NotFound.jsx";
+import ReportButton from "../../components/ReportButton.jsx";
 import { CartBar } from "../../components/CartSheet.jsx";
 import { PromoBanner, FreeShipNote, StoreFaq } from "../../components/StoreExtras.jsx";
 import { priceFor, offPct, trackVisit } from "../../lib/promo.js";
@@ -105,6 +106,7 @@ export default function SellerPage() {
       )}
       <ReviewList summary={reviews} />
       {seller.store && <StoreFaq store={seller.store} />}
+      <div className="mt-8 flex justify-center pb-28"><ReportButton kind="vendedor" target={seller.id} /></div>
       {seller.store && <CartBar seller={seller} store={seller.store} />}
     </Phone>
   );

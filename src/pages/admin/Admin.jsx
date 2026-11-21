@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { BarChart3, ClipboardList, Package, Search, Users } from "lucide-react";
+import { BarChart3, ClipboardList, Flag, Package, Search, Star, Users } from "lucide-react";
 import { supabase } from "../../lib/supabase.js";
 import { fmt } from "../../lib/format.js";
 
@@ -8,16 +8,20 @@ import { fmt } from "../../lib/format.js";
 const PLAN = { pase: "Una sola cosa", mensual: "Básico", pro: "Pro con IA", tienda: "Tienda" };
 const STATUS = { prueba: "Prueba", activa: "Activa", gracia: "Pago pendiente", vencida: "Vencida", suspendida: "Suspendida", cancelada: "Cancelada" };
 const TONE = { prueba: "bg-sky-100 text-sky-800", activa: "bg-emerald-100 text-emerald-800", gracia: "bg-amber-100 text-amber-800", vencida: "bg-zinc-200 text-zinc-700", suspendida: "bg-rose-100 text-rose-700", cancelada: "bg-zinc-200 text-zinc-600" };
-const ACTION = { plan: "Cambió el plan", extender: "Extendió la prueba", estado: "Cambió el estado", pases: "Ajustó pases", pausar: "Pausó publicación", liberar: "Liberó publicación" };
+const ACTION = { plan: "Cambió el plan", extender: "Extendió la prueba", estado: "Cambió el estado", pases: "Ajustó pases", pausar: "Pausó publicación", liberar: "Liberó publicación",
+  ocultar_resena: "Ocultó una reseña", mostrar_resena: "Volvió a mostrar una reseña", denuncia_resuelto: "Resolvió una denuncia", denuncia_descartado: "Descartó una denuncia" };
+const REASON = { estafa: "Estafa", prohibido: "No se puede vender", ofensivo: "Ofensivo", falso: "Falso", otro: "Otro" };
 const date = (d) => (d ? new Date(d).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "2-digit" }) : "—");
 
 export default function Admin() {
   const [tab, setTab] = useState("resumen");
   const [denied, setDenied] = useState(false);
+  const [pending, setPending] = useState(0);
   useEffect(() => { supabase.rpc("admin_overview").then(({ error }) => error && setDenied(true)); }, []);
+  useEffect(() => { supabase.rpc("admin_reports_count").then(({ data }) => setPending(data || 0)); }, [tab]);
   if (denied) return <main className="px-6 py-24 text-center"><h1 className="font-display text-2xl font-extrabold">No tenés acceso</h1><Link to="/panel" className="mt-4 inline-block text-hpred underline">Volver a tu panel</Link></main>;
 
-  const tabs = [["resumen", "Resumen", BarChart3], ["vendedores", "Vendedores", Users], ["publicaciones", "Publicaciones", Package], ["registro", "Registro", ClipboardList]];
+  const tabs = [["resumen", "Resumen", BarChart3], ["denuncias", `Denuncias${pending ? ` (${pending})` : ""}`, Flag], ["vendedores", "Vendedores", Users], ["publicaciones", "Publicaciones", Package], ["resenas", "Reseñas", Star], ["registro", "Registro", ClipboardList]];
   return (
     <div className="min-h-screen bg-zinc-50 lg:flex">
       <aside className="border-b border-zinc-200 bg-white lg:min-h-screen lg:w-60 lg:border-b-0 lg:border-r">
@@ -34,6 +38,8 @@ export default function Admin() {
         {tab === "vendedores" && <Vendedores />}
         {tab === "publicaciones" && <Publicaciones />}
         {tab === "registro" && <Registro />}
+        {tab === "denuncias" && <Denuncias onChange={() => supabase.rpc("admin_reports_count").then(({ data }) => setPending(data || 0))} />}
+        {tab === "resenas" && <Resenas />}
       </main>
     </div>
   );
@@ -172,6 +178,102 @@ function Registro() {
           </li>
         ))}
         {rows && !rows.length && <li className="p-6 text-center text-sm text-zinc-500">Todavía no hiciste cambios.</li>}
+      </ul>
+    </>
+  );
+}
+
+const KIND = { producto: "Publicación", vendedor: "Vendedor", resena: "Reseña" };
+
+function Denuncias({ onChange }) {
+  const [status, setStatus] = useState("nuevo");
+  const [rows, setRows] = useState(null);
+  const [tick, setTick] = useState(0);
+  useEffect(() => { setRows(null); supabase.rpc("admin_reports", { p_status: status }).then(({ data }) => setRows(data || [])); }, [status, tick]);
+  const reload = () => { setTick((t) => t + 1); onChange?.(); };
+  const close = async (r, st) => { await supabase.rpc("admin_report_close", { p_kind: r.kind, p_target: r.target, p_status: st }); reload(); };
+  const product = async (r, action) => {
+    const reason = action === "pausar" ? window.prompt(`¿Por qué pausás «${r.product_title}»? (queda en el registro)`, "Denuncia") : "";
+    if (reason === null) return;
+    await supabase.rpc("admin_product_action", { p_product: r.target, p_action: action, p_reason: reason }); reload();
+  };
+  const review = async (r, hide) => { await supabase.rpc("admin_review_action", { p_review: r.target, p_hide: hide }); reload(); };
+  const suspend = async (r) => {
+    if (!window.confirm(`¿Suspender a ${r.seller_name}? Sus publicaciones dejan de recibir ofertas y pedidos.`)) return;
+    await supabase.rpc("admin_seller_action", { p_seller: r.seller_id, p_action: "estado", p_value: "suspendida" }); reload();
+  };
+  const btn = "rounded-lg px-2.5 py-1.5 text-[12px] font-semibold ring-1";
+  return (
+    <>
+      <h1 className="font-display text-2xl font-extrabold">Denuncias</h1>
+      <p className="text-sm text-zinc-500">Con 3 denuncias de personas distintas, una publicación se pausa sola y una reseña se oculta, hasta que la revises.</p>
+      <div className="mt-3 flex gap-1">
+        {[["nuevo", "Para revisar"], ["resuelto", "Resueltas"], ["descartado", "Descartadas"]].map(([k, l]) => (
+          <button key={k} onClick={() => setStatus(k)} className={`rounded-xl px-3 py-1.5 text-[13px] font-semibold ${status === k ? "bg-ink text-white" : "bg-white text-zinc-600 ring-1 ring-zinc-200"}`}>{l}</button>
+        ))}
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        {rows?.map((r) => (
+          <div key={r.kind + r.target} className="rounded-2xl bg-white p-4 ring-1 ring-zinc-200">
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-[12px] font-bold uppercase tracking-wide text-zinc-500">{KIND[r.kind]} · {r.n} {r.n === 1 ? "denuncia" : "denuncias"}</p>
+              {r.auto_action && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-bold text-rose-700">{r.auto_action === "pausada" ? "Pausada sola" : "Oculta sola"}</span>}
+            </div>
+            {r.kind === "producto" && (
+              <div className="mt-2 flex gap-3">
+                {r.product_photo ? <img src={r.product_photo} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" /> : null}
+                <div className="min-w-0"><a href={`/${r.seller_slug}/${r.product_slug}`} target="_blank" rel="noreferrer" className="text-[15px] font-semibold hover:underline">{r.product_title}</a>
+                  <p className="text-[12px] text-zinc-500">de <a href={`/${r.seller_slug}`} target="_blank" rel="noreferrer" className="underline">{r.seller_name}</a>{r.product_moderation === "pausada" ? " · pausada" : ""}</p></div>
+              </div>
+            )}
+            {r.kind === "vendedor" && <p className="mt-2 text-[15px] font-semibold"><a href={`/${r.seller_slug}`} target="_blank" rel="noreferrer" className="hover:underline">{r.seller_name}</a> <span className="text-[12px] font-normal text-zinc-500">· {STATUS[r.seller_status] || r.seller_status}</span></p>}
+            {r.kind === "resena" && (
+              <div className="mt-2 text-[14px]"><p><b>{r.review_by}</b> · {r.review_stars}★ sobre <a href={`/${r.seller_slug}`} target="_blank" rel="noreferrer" className="underline">{r.seller_name}</a>{r.review_hidden ? " · oculta" : ""}</p>
+                {r.review_comment && <p className="mt-0.5 text-zinc-700">«{r.review_comment}»</p>}</div>
+            )}
+            <ul className="mt-2 space-y-1 text-[13px]">
+              {r.items.slice(0, 5).map((i) => <li key={i.id} className="rounded-lg bg-zinc-50 px-2 py-1"><b>{REASON[i.reason]}</b>{i.detail ? ` · ${i.detail}` : ""} <span className="text-zinc-400">· {date(i.created_at)}</span></li>)}
+            </ul>
+            {status === "nuevo" && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {r.kind === "producto" && (r.product_moderation === "pausada"
+                  ? <button onClick={() => product(r, "liberar")} className={`${btn} text-emerald-700 ring-emerald-200`}>Liberar publicación</button>
+                  : <button onClick={() => product(r, "pausar")} className={`${btn} text-rose-700 ring-rose-200`}>Pausar publicación</button>)}
+                {r.kind === "resena" && (r.review_hidden
+                  ? <button onClick={() => review(r, false)} className={`${btn} text-emerald-700 ring-emerald-200`}>Volver a mostrar</button>
+                  : <button onClick={() => review(r, true)} className={`${btn} text-rose-700 ring-rose-200`}>Ocultar reseña</button>)}
+                {r.seller_status !== "suspendida" && <button onClick={() => suspend(r)} className={`${btn} text-rose-700 ring-rose-200`}>Suspender vendedor</button>}
+                <button onClick={() => close(r, "resuelto")} className={`${btn} bg-ink text-white ring-ink`}>Listo, resuelta</button>
+                <button onClick={() => close(r, "descartado")} className={`${btn} text-zinc-600 ring-zinc-300`}>Descartar</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      {rows && !rows.length && <p className="mt-6 rounded-2xl bg-white p-6 text-center text-sm text-zinc-500 ring-1 ring-zinc-200">{status === "nuevo" ? "No hay denuncias para revisar. 🎉" : "Nada por acá."}</p>}
+      {!rows && <p className="mt-4 text-sm text-zinc-500">Cargando…</p>}
+    </>
+  );
+}
+
+function Resenas() {
+  const [rows, setRows] = useState(null);
+  const [tick, setTick] = useState(0);
+  useEffect(() => { supabase.rpc("admin_reviews").then(({ data }) => setRows(data || [])); }, [tick]);
+  const toggle = async (r) => { await supabase.rpc("admin_review_action", { p_review: r.id, p_hide: !r.hidden }); setTick((t) => t + 1); };
+  return (
+    <>
+      <h1 className="font-display text-2xl font-extrabold">Reseñas</h1>
+      <p className="text-sm text-zinc-500">Las últimas 200. Si ocultás una, deja de verse y no cuenta en el promedio.</p>
+      <ul className="mt-4 divide-y divide-zinc-100 rounded-2xl bg-white ring-1 ring-zinc-200">
+        {rows?.map((r) => (
+          <li key={r.id} className={`flex flex-wrap items-start justify-between gap-2 p-3 text-[13px] ${r.hidden ? "opacity-60" : ""}`}>
+            <span className="min-w-0 flex-1"><b>{r.buyer_name}</b> · {r.stars}★ → <a href={`/${r.seller_slug}`} target="_blank" rel="noreferrer" className="underline">{r.seller_name}</a>{r.product_title ? ` · ${r.product_title}` : ""} <span className="text-zinc-400">· {date(r.created_at)}</span>
+              {r.comment && <span className="mt-0.5 block text-zinc-700">«{r.comment}»</span>}</span>
+            <button onClick={() => toggle(r)} className={`rounded-lg px-2.5 py-1 text-[12px] font-semibold ring-1 ${r.hidden ? "text-emerald-700 ring-emerald-200" : "text-rose-700 ring-rose-200"}`}>{r.hidden ? "Mostrar" : "Ocultar"}</button>
+          </li>
+        ))}
+        {rows && !rows.length && <li className="p-6 text-center text-sm text-zinc-500">Todavía no hay reseñas.</li>}
       </ul>
     </>
   );

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 import { getSellerReviews, reviewStatus, submitReview, avgText } from "../lib/reviews.js";
+import ReportButton from "./ReportButton.jsx";
 
 export function Stars({ value, size = 14 }) {
   return (
@@ -41,7 +42,10 @@ export function ReviewList({ summary }) {
               <Stars value={r.stars} size={13} />
             </div>
             {r.comment && <p className="mt-1 text-[14px] text-zinc-700">«{r.comment}»</p>}
-            <p className="mt-1 text-[11px] text-zinc-500">{r.product_title ? `Compró: ${r.product_title} · ` : ""}{new Date(r.created_at).toLocaleDateString("es-AR", { day: "numeric", month: "long" })}</p>
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <p className="text-[11px] text-zinc-500">{r.product_title ? `Compró: ${r.product_title} · ` : ""}{new Date(r.created_at).toLocaleDateString("es-AR", { day: "numeric", month: "long" })}</p>
+              <ReportButton kind="resena" target={r.id} className="!text-[11px] !font-normal" />
+            </div>
           </li>
         ))}
       </ul>
