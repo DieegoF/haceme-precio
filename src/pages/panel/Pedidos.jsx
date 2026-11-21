@@ -17,7 +17,7 @@ export default function Pedidos() {
 
   const load = async () => {
     const { data, error } = await supabase.from("orders")
-      .select("id, code, status, buyer_name, buyer_contact, delivery, address, note, total, free_shipping, expires_at, created_at, cancelled_by, order_items(title, photo, color, size, qty, unit_price)")
+      .select("id, code, status, buyer_name, buyer_contact, delivery, address, note, total, free_shipping, pay_mode, payment_status, expires_at, created_at, cancelled_by, order_items(title, photo, color, size, qty, unit_price)")
       .order("created_at", { ascending: false }).limit(100);
     if (error) setErr("No pudimos cargar tus pedidos. Recargá la página.");
     else { setErr(""); setOrders(data); setTick((t) => t + 1); }
@@ -83,7 +83,11 @@ function OrderCard({ o, seller, now, onDone, compact }) {
           <p className="text-[16px] font-bold">{o.buyer_name} · {fmt(o.total)}</p>
           <p className="text-[12px] text-zinc-500">{units} {units === 1 ? "producto" : "productos"}</p>
         </div>
-        <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${st.tone}`}>{status === "reservado" ? `Vence en ${left(o.expires_at, now)}` : st.label}</span>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${st.tone}`}>{status === "reservado" ? `Vence en ${left(o.expires_at, now)}` : st.label}</span>
+          {o.payment_status === "pagado" ? <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${status === "cancelado" ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"}`}>{status === "cancelado" ? "Pagado sin stock: devolvé el dinero" : "Pagado ✓"}</span>
+            : o.pay_mode === "mp" && status === "reservado" ? <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-bold text-sky-800">Esperando el pago</span> : null}
+        </div>
       </div>
 
       {!compact && (

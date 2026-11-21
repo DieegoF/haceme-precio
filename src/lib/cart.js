@@ -59,6 +59,16 @@ export async function cancelMyOrder(id) {
   if (error) throw error;
   return data;
 }
+// Pago con Mercado Pago: el servidor crea el cobro con la cuenta del vendedor y devuelve el link de MP.
+export async function payOrder(id) {
+  const { data, error } = await supabase.functions.invoke("mp-checkout", { body: { action: "pay", order_id: id, token: buyerToken() } });
+  if (error || !data?.url) throw new Error(data?.error || "MP");
+  return data.url;
+}
+// Al volver de MP: el servidor consulta el pago a MP (nunca se confía en la URL de vuelta).
+export async function syncOrderPayment(id) {
+  await supabase.functions.invoke("mp-checkout", { body: { action: "sync", order_id: id, token: buyerToken() } }).catch(() => {});
+}
 // Pedidos del vendedor
 export async function sellerOrderAction(id, action) {
   const { data, error } = await supabase.rpc("seller_order_action", { p_order: id, p_action: action });

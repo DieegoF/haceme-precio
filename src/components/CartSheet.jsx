@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Minus, Plus, ShoppingBag, Store, Trash2, Truck } from "lucide-react";
-import { useCart, lineKey, placeOrder, orderError } from "../lib/cart.js";
+import { useCart, lineKey, placeOrder, orderError, payOrder } from "../lib/cart.js";
 import { savedBuyer, saveBuyer } from "../lib/offers.js";
 import { fmt } from "../lib/format.js";
 
@@ -45,6 +45,9 @@ export default function CartSheet({ seller, store, onClose }) {
       saveBuyer({ ...savedBuyer(), name: f.name.trim(), contact: f.contact.trim(), address: f.address.trim() });
       const order = await placeOrder(seller.id, f, cart.items);
       cart.clear();
+      if (order.pay_mode === "mp") {
+        try { window.location.href = await payOrder(order.id); return; } catch { /* si MP falla, desde el pedido puede reintentar */ }
+      }
       nav(`/pedido/${order.id}`);
     } catch (ex) { setErr(orderError(ex)); setBusy(false); }
   };
@@ -122,14 +125,16 @@ export default function CartSheet({ seller, store, onClose }) {
             <textarea id="bnote" maxLength={300} rows={2} value={f.note} onChange={set("note")} placeholder="Ej: paso el sábado a la mañana" className={input} />
 
             <div className="mt-5 rounded-2xl bg-zinc-50 p-4 text-[13px] text-zinc-600 ring-1 ring-zinc-200">
-              Te guardamos todo por <b>24 horas</b>. El local te escribe por WhatsApp para coordinar el pago y la entrega.
+              {store?.accepts_mp
+                ? <>Pagás ahora con <b>Mercado Pago</b> (tarjeta, dinero en cuenta o transferencia). Te guardamos todo por <b>30 minutos</b> mientras pagás.</>
+                : <>Te guardamos todo por <b>24 horas</b>. El local te escribe por WhatsApp para coordinar el pago y la entrega.</>}
             </div>
             {err && <p className="mt-3 text-sm font-semibold text-hpred">{err}</p>}
 
             <div className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md border-t border-zinc-200 bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur">
               <div className="mb-2 flex justify-between px-1 text-[15px]"><span className="text-zinc-600">Total</span><b>{fmt(cart.total)}</b></div>
               <button disabled={busy} style={{ backgroundColor: color }} className="flex min-h-[52px] w-full items-center justify-center rounded-2xl text-[16px] font-semibold text-white disabled:opacity-50">
-                {busy ? "Enviando…" : "Hacer el pedido"}
+                {busy ? (store?.accepts_mp ? "Abriendo Mercado Pago…" : "Enviando…") : store?.accepts_mp ? "Pagar con Mercado Pago" : "Hacer el pedido"}
               </button>
             </div>
           </form>
