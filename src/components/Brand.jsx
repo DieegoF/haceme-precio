@@ -17,6 +17,6 @@ export function BrandBar({ right }) {
 // wide="full": usa todo el ancho (panel). wide (true): fondo blanco a todo el ancho y contenido centrado (tienda, producto).
 export function Phone({ children, className = "", wide = false }) {
   if (wide === "full") return <div className={`mx-auto min-h-screen max-w-md bg-white lg:max-w-none ${className}`}>{children}</div>;
-  if (wide) return <div className="min-h-screen bg-white"><div className={`mx-auto min-h-screen max-w-md lg:max-w-6xl ${className}`}>{children}</div></div>;
+  if (wide) return <div className="min-h-screen bg-white"><div className={`mx-auto min-h-screen max-w-md lg:max-w-7xl 2xl:max-w-[1600px] ${className}`}>{children}</div></div>;
   return <div className={`mx-auto min-h-screen max-w-md bg-white lg:my-8 lg:min-h-[calc(100vh-4rem)] lg:rounded-3xl lg:shadow-sm lg:ring-1 lg:ring-zinc-200 ${className}`}>{children}</div>;
 }
