@@ -51,3 +51,43 @@ begin
   update public.products pr set stock = (select coalesce(sum(v.stock), 0) from public.product_variants v where v.product_id = pr.id)
     where pr.seller_id = s and pr.has_variants;
 end $$;
+
+-- Pedidos y visitas de ejemplo para el panel de la tienda (no mandan mails).
+do $$
+declare s uuid; o uuid; i int;
+begin
+  select id into s from public.sellers where slug = 'diegostore';
+  delete from public.orders where seller_id = s and note like '[demo]%';
+  for i in 0..13 loop
+    insert into public.store_visits (seller_id, day, visits) values (s, ((now() at time zone 'America/Argentina/Buenos_Aires')::date - i), 18 + (i * 7) % 23)
+    on conflict (seller_id, day) do update set visits = excluded.visits;
+  end loop;
+  -- Nuevo (esperando confirmación / pago)
+  insert into public.orders (code, seller_id, buyer_token, buyer_name, buyer_contact, delivery, address, note, subtotal, total, status, expires_at, created_at)
+  values ('DEMO01', s, gen_random_uuid(), 'Camila', '1155550101', 'envio', 'Av. Mitre 1450, Quilmes', '[demo] Si puede ser a la tarde', 66400, 66400, 'reservado', now() + interval '20 hours', now() - interval '25 minutes') returning id into o;
+  -- El alta de pedidos con MP conectado lo deja en 30 min: para la demo lo dejamos para coordinar, con 20 h.
+  update public.orders set pay_mode = 'acordar', expires_at = now() + interval '20 hours' where id = o;
+  insert into public.order_notifications (order_id, kind) values (o, 'nuevo');
+  insert into public.order_items (order_id, title, photo, color, size, qty, unit_price) values
+    (o, 'Remera oversize negra', 'https://images.pexels.com/photos/8532638/pexels-photo-8532638.jpeg?auto=compress&cs=tinysrgb&w=1000', 'Negro', 'L', 2, 14400),
+    (o, 'Jean recto clásico', 'https://images.pexels.com/photos/6764007/pexels-photo-6764007.jpeg?auto=compress&cs=tinysrgb&w=1000', 'Azul', '42', 1, 37600);
+  -- Confirmado y pagado con Mercado Pago
+  insert into public.orders (code, seller_id, buyer_token, buyer_name, buyer_contact, delivery, note, subtotal, total, status, payment_status, pay_mode, paid_at, paid_amount, expires_at, created_at, decided_at)
+  values ('DEMO02', s, gen_random_uuid(), 'Nicolás', '1155550202', 'retiro', '[demo]', 52000, 52000, 'confirmado', 'pagado', 'mp', now() - interval '3 hours', 52000, now(), now() - interval '3 hours', now() - interval '3 hours') returning id into o;
+  insert into public.order_notifications (order_id, kind) values (o, 'nuevo');
+  insert into public.order_items (order_id, title, photo, color, size, qty, unit_price) values
+    (o, 'Campera de jean', 'https://images.pexels.com/photos/19220632/pexels-photo-19220632.jpeg?auto=compress&cs=tinysrgb&w=1000', 'Azul', 'M', 1, 52000);
+  -- Entregados (historial y ventas del mes)
+  insert into public.orders (code, seller_id, buyer_token, buyer_name, buyer_contact, delivery, note, subtotal, total, status, payment_status, expires_at, created_at, decided_at)
+  values ('DEMO03', s, gen_random_uuid(), 'Valeria', '1155550303', 'retiro', '[demo]', 30400, 30400, 'entregado', 'pagado', now(), now() - interval '2 days', now() - interval '2 days') returning id into o;
+  insert into public.order_notifications (order_id, kind) values (o, 'nuevo');
+  insert into public.order_items (order_id, title, photo, color, size, qty, unit_price) values
+    (o, 'Remera básica de algodón', 'https://images.pexels.com/photos/7319146/pexels-photo-7319146.jpeg?auto=compress&cs=tinysrgb&w=1000', 'Negro', 'M', 1, 11200),
+    (o, 'Buzo canguro rojo', 'https://images.pexels.com/photos/13816095/pexels-photo-13816095.jpeg?auto=compress&cs=tinysrgb&w=1000', 'Rojo', 'L', 1, 19000);
+  insert into public.orders (code, seller_id, buyer_token, buyer_name, buyer_contact, delivery, address, note, subtotal, total, free_shipping, status, payment_status, expires_at, created_at, decided_at)
+  values ('DEMO04', s, gen_random_uuid(), 'Federico', '1155550404', 'envio', 'Calle 14 2230, Berazategui', '[demo]', 80800, 80800, true, 'entregado', 'pagado', now(), now() - interval '5 days', now() - interval '5 days') returning id into o;
+  insert into public.order_notifications (order_id, kind) values (o, 'nuevo');
+  insert into public.order_items (order_id, title, photo, color, size, qty, unit_price) values
+    (o, 'Remera oversize negra', 'https://images.pexels.com/photos/8532638/pexels-photo-8532638.jpeg?auto=compress&cs=tinysrgb&w=1000', 'Negro', 'M', 3, 14400),
+    (o, 'Jean recto clásico', 'https://images.pexels.com/photos/6764007/pexels-photo-6764007.jpeg?auto=compress&cs=tinysrgb&w=1000', 'Azul', '44', 1, 37600);
+end $$;
