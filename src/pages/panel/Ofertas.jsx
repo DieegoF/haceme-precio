@@ -62,7 +62,10 @@ export default function Ofertas() {
                           <p className="truncate text-[13px] font-medium">{o.product_title}</p>
                           <p className="text-[12px] text-zinc-500">{o.buyer_name} · {fmt(o.amount)}</p>
                         </div>
-                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${HIST[o.status][1]}`}>{HIST[o.status][0]}</span>
+                        <span className="flex shrink-0 flex-col items-end gap-0.5">
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${HIST[o.status][1]}`}>{HIST[o.status][0]}</span>
+                          {o.payment_status === "pagado" && <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold text-white ${o.status === "vendida" ? "bg-emerald-600" : "bg-rose-600"}`}>{o.status === "vendida" ? "Pagado ✓" : "Pagó tarde: resolvé"}</span>}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -154,6 +157,7 @@ function Deal({ o, seller, onAct }) {
     <li className="rounded-2xl bg-white p-3 ring-2 ring-emerald-300">
       <Head o={o} />
       <p className="mt-2 text-[12px] text-emerald-800">✅ Trato por <b>{fmt(o.amount)}</b> · reservado hasta las {hhmm(o.close_by)} h</p>
+      {o.can_pay_mp && <p className="mt-1 inline-block rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-bold text-sky-800">Esperando el pago con Mercado Pago</p>}
       <a href={waLink(o.buyer_contact, msg)} target="_blank" rel="noreferrer" className="mt-2 flex min-h-[46px] items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-[14px] font-semibold text-white">
         <MessageCircle size={16} /> Escribirle por WhatsApp
       </a>

@@ -9,6 +9,17 @@ export function buyerToken() {
     return t;
   } catch { return crypto.randomUUID(); }
 }
+// Pago del trato con Mercado Pago (el servidor crea el cobro con la cuenta del vendedor).
+export async function payOffer(offerId) {
+  const { data, error } = await supabase.functions.invoke("mp-checkout", { body: { action: "pay_offer", offer_id: offerId, token: buyerToken() } });
+  if (error || !data?.url) throw new Error(data?.error || "MP");
+  return data.url;
+}
+// Al volver de MP o mientras espera: el servidor consulta el pago a MP (la URL de vuelta no marca nada).
+export async function syncOfferPayment(offerId) {
+  await supabase.functions.invoke("mp-checkout", { body: { action: "sync_offer", offer_id: offerId, token: buyerToken() } }).catch(() => {});
+}
+
 // Link personal de la oferta (?o=identificador): al abrirlo en otro navegador, recupera las ofertas.
 export function adoptBuyerToken() {
   try {
