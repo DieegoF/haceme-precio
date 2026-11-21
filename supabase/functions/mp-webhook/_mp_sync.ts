@@ -1,5 +1,12 @@
 // Compartido: consulta la order a Mercado Pago con el token del vendedor y, si está pagada, marca
 // el pedido de tienda o el trato de oferta. El estado del pago SIEMPRE sale de MP, nunca del aviso ni del navegador.
+// Solo entorno de prueba: MP no deja pagar como invitado a una cuenta vendedora de prueba conectada
+// por OAuth («una de las partes es de prueba»). Con MP_PRUEBA_TOKEN_APP=1 se cobra con el token de
+// prueba de la app (MP_ACCESS_TOKEN), como indica la guía de pruebas de Checkout Pro. En producción NO se define.
+export function mpToken(c: { access_token: string }) {
+  return Deno.env.get("MP_PRUEBA_TOKEN_APP") === "1" ? Deno.env.get("MP_ACCESS_TOKEN")! : c.access_token;
+}
+
 export async function syncMpOrder(admin: any, mpOrderId: string) {
   let kind = "order";
   let { data: o } = await admin.from("orders").select("id, seller_id, payment_status").eq("mp_order_id", mpOrderId).maybeSingle();
@@ -11,7 +18,7 @@ export async function syncMpOrder(admin: any, mpOrderId: string) {
   if (o.payment_status === "pagado") return "YA_PAGADO";
   const { data: c } = await admin.from("mp_connections").select("access_token").eq("seller_id", o.seller_id).maybeSingle();
   if (!c) return "SIN_CONEXION";
-  const r = await fetch(`https://api.mercadopago.com/v1/orders/${encodeURIComponent(mpOrderId)}`, { headers: { Authorization: `Bearer ${c.access_token}` } });
+  const r = await fetch(`https://api.mercadopago.com/v1/orders/${encodeURIComponent(mpOrderId)}`, { headers: { Authorization: `Bearer ${mpToken(c)}` } });
   if (!r.ok) return `MP_${r.status}`;
   const m = await r.json();
   if (m.external_reference !== o.id) return "REFERENCIA_DISTINTA";
