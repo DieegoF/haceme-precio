@@ -2,7 +2,7 @@
 // pay  → crea la order en MP con el token del VENDEDOR (la plata va a su cuenta) y devuelve el checkout_url.
 // sync → al volver de MP, consulta la order a MP y marca pagado si corresponde.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { syncMpOrder } from "./_mp_sync.ts";
+import { syncMpOrder, mpToken } from "./_mp_sync.ts";
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
   const items = (o.order_items as any[]).map((i) => ({ title: String(i.title).slice(0, 120), unit_price: money(i.unit_price), quantity: i.qty }));
   const r = await fetch("https://api.mercadopago.com/v1/orders", {
     method: "POST",
-    headers: { Authorization: `Bearer ${c.access_token}`, "Content-Type": "application/json", accept: "application/json", "X-Idempotency-Key": crypto.randomUUID() },
+    headers: { Authorization: `Bearer ${mpToken(c)}`, "Content-Type": "application/json", accept: "application/json", "X-Idempotency-Key": crypto.randomUUID() },
     body: JSON.stringify({
       type: "online", processing_mode: "manual", total_amount: money(o.total), external_reference: o.id,
       description: `Pedido #${o.code}`, expiration_time: `PT${minutes}M`, items,
@@ -78,7 +78,7 @@ async function offerFlow(action: string, offerId: string, token: string) {
   const title = String((o as any).products.title).slice(0, 120);
   const r = await fetch("https://api.mercadopago.com/v1/orders", {
     method: "POST",
-    headers: { Authorization: `Bearer ${c.access_token}`, "Content-Type": "application/json", accept: "application/json", "X-Idempotency-Key": crypto.randomUUID() },
+    headers: { Authorization: `Bearer ${mpToken(c)}`, "Content-Type": "application/json", accept: "application/json", "X-Idempotency-Key": crypto.randomUUID() },
     body: JSON.stringify({
       type: "online", processing_mode: "manual", total_amount: money(o.amount), external_reference: o.id,
       description: `Trato: ${title}`, expiration_time: `PT${minutes}M`,
