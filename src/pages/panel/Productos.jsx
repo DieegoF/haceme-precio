@@ -76,7 +76,7 @@ export default function Productos() {
             </div>
           ) : (
             <ul className="mt-4 space-y-3">
-              {items.map((p) => <Item key={p.id} p={p} sellerSlug={seller.slug} onStatus={setStatus} onRemove={remove} onCopy={copyLink} />)}
+              {items.map((p) => <Item key={p.id} p={p} sellerSlug={seller.slug} isStore={seller.is_store} onStatus={setStatus} onRemove={remove} onCopy={copyLink} />)}
             </ul>
           )}
       </main>
@@ -84,7 +84,7 @@ export default function Productos() {
   );
 }
 
-function Item({ p, sellerSlug, onStatus, onRemove, onCopy }) {
+function Item({ p, sellerSlug, isStore, onStatus, onRemove, onCopy }) {
   const [confirm, setConfirm] = useState(false);
   const r = Array.isArray(p.product_rules) ? p.product_rules[0] : p.product_rules;
   const st = p.moderation === "pausada" ? { t: "Pausado por revisión", c: "bg-rose-100 text-rose-800" } : STATUS[p.status];
@@ -100,7 +100,7 @@ function Item({ p, sellerSlug, onStatus, onRemove, onCopy }) {
           </div>
           <p className="mt-0.5 text-[16px] font-extrabold">{fmt(p.list_price)}</p>
           {r && <p className="flex items-center gap-1 text-[12px] text-zinc-500"><Lock size={11} /> Mínimo {fmt(r.floor_price)}{r.auto_accept_pct ? <> · <Zap size={11} /> sola desde {fmt(Math.round(p.list_price * r.auto_accept_pct / 100))}</> : null}</p>}
-          {p.mode === "oferta" && seller?.is_store && <p className="text-[12px] text-zinc-500">🤝 Acepta ofertas</p>}
+          {p.mode === "oferta" && isStore && <p className="text-[12px] text-zinc-500">🤝 Acepta ofertas</p>}
           {p.mode === "fijo" && <p className="text-[12px] text-zinc-500">{p.liquidation ? "🔥 Liquidación" : "Precio fijo"} · {p.stock > 0 ? `${p.stock} en stock` : <b className="text-hpred">sin stock</b>}</p>}
           {p.mode !== "fijo" && p.stock > 1 && <p className="text-[12px] text-zinc-500">{p.stock} unidades</p>}
         </div>
