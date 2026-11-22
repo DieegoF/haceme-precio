@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./index.css";
 import { AuthProvider, RequireAuth } from "./lib/auth.jsx";
+import { registerServiceWorker } from "./lib/push.js";
 import Landing from "./pages/Landing.jsx";
 import Login from "./pages/Login.jsx";
 import PanelLayout from "./pages/panel/PanelLayout.jsx";
@@ -28,6 +29,7 @@ adoptBuyerToken(); // si llegó con su link personal de oferta (?o=…), recuper
 const Demo = lazy(() => import("./pages/Demo.jsx"));
 const Prototipo = lazy(() => import("./prototype/App.jsx"));
 
+registerServiceWorker();
 createRoot(document.getElementById("root")).render(
   <AuthProvider>
     <BrowserRouter>

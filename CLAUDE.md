@@ -11,6 +11,9 @@
 - Nada pasa a «pagado» a mano ni por captura: solo con el webhook de Mercado Pago verificado por firma.
 - En el frontend solo van claves públicas (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`). La service_role key y las credenciales de Mercado Pago solo en variables del servidor.
 
+## Avisos
+- Mails con Resend (`notify-offer`, `notify-order`) y avisos push (Web Push) a los dispositivos en `push_subscriptions` (módulo `_push.ts`). La app pide la clave pública VAPID a la edge `push-key`; el par vive solo en los secretos `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` de Supabase (mismo par en dev y prod).
+
 ## Base de datos
 - Cambios de esquema siempre como migración en `supabase/migrations/`, aplicados primero en `haceme-precio-dev` (ref `yuhguakcajaeusldklkr`) y recién después en `haceme-precio-prod` (ref `ogipiqwuuxxhinendbsy`).
 
