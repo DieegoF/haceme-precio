@@ -50,7 +50,7 @@ export function Terminos() {
 
       <H>3. Planes y precios</H>
       <L items={[
-        "Gratis: sin costo mensual y publicaciones sin límite. Haceme Precio cobra una comisión del 3% sobre las ventas que cobrás con Mercado Pago dentro de la página; Mercado Pago la descuenta automáticamente del cobro. Las ventas que cobrás por fuera (efectivo, transferencia) no pagan comisión. La comisión empieza a cobrarse el 21 de febrero de 2027.",
+        "Gratis: sin costo mensual y publicaciones sin límite. Haceme Precio cobra una comisión del 3% sobre las ventas que cobrás con Mercado Pago dentro de la página; Mercado Pago la descuenta automáticamente del cobro. Las ventas que cobrás por fuera (efectivo, transferencia) no pagan comisión. La comisión empieza a cobrarse el 1 de enero de 2027.",
         "Básico: $10.000 por mes, sin comisión, con 15 días de prueba gratis al registrarte.",
         "Tienda: $40.000 por mes, sin comisión, con 15 días de prueba gratis.",
         "Los precios incluyen impuestos, si correspondieran. Si cambian, te avisamos con al menos 30 días de anticipación.",
