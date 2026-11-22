@@ -20,7 +20,7 @@ export default function Status() {
   return (
     <main className="mx-auto max-w-md px-5 py-10 font-sans text-ink">
       <h1 className="font-display text-2xl font-extrabold">Estado de Haceme Precio</h1>
-      <p className="mt-1 text-sm text-zinc-500">Entorno: <b>{import.meta.env.VITE_APP_ENV || "local"}</b> · base <b>{isProdHost ? "producción" : "pruebas"}</b> · versión {import.meta.env.VITE_APP_VERSION || "dev"}</p>
+      <p className="mt-1 text-sm text-zinc-500">Base <b>{isProdHost ? "producción" : "pruebas"}</b> · versión {__APP_COMMIT__}</p>
       <ul className="mt-6 rounded-2xl bg-white px-4 ring-1 ring-zinc-200">
         {row("App publicada", true, "✓ OK")}
         {row("Conexión con Supabase", db.state === "checking" ? null : db.state === "ok", db.state === "checking" ? "Revisando…" : db.state === "ok" ? `✓ OK (${db.ms} ms)` : `✗ ${db.msg}`)}
