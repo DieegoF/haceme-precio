@@ -14,7 +14,13 @@ export default function PushToggle() {
   const turnOn = async () => {
     setBusy(true); setMsg("");
     try { await enablePush(); await refresh(); setMsg("¡Listo! Ahora tocá «Probar aviso»."); }
-    catch (e) { setMsg(e.message === "BLOQUEADO" ? "Bloqueaste los avisos. Activalos desde el candadito de la barra de direcciones." : "No se pudieron activar. Probá de nuevo."); await refresh(); }
+    catch (e) {
+      const raw = `${e?.name || ""} ${e?.message || e?.code || ""}`.trim();
+      setMsg(e?.message === "BLOQUEADO" ? "Bloqueaste los avisos. Activalos desde el candadito de la barra de direcciones."
+        : /push service|not available|AbortError/i.test(raw) ? `Este celular no pudo conectarse al servicio de avisos de Google. Probá con Google Chrome actualizado. (${raw})`
+        : `No se pudieron activar. Probá de nuevo. (${raw || "sin detalle"})`);
+      await refresh();
+    }
     setBusy(false);
   };
   const turnOff = async () => { setBusy(true); setMsg(""); try { await disablePush(); } catch { /* nada */ } await refresh(); setBusy(false); };
