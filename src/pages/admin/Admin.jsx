@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { BarChart3, ClipboardList, FileText, Flag, Package, Search, Star, Users } from "lucide-react";
 import { supabase } from "../../lib/supabase.js";
 import { fmt } from "../../lib/format.js";
+import { LOGO_HORIZ } from "../../prototype/brand.js";
 
 // Panel de administración (solo is_admin). Pensado para compu; en el celular se ve en columna.
 const PLAN = { gratis: "Gratis", pase: "Gratis (viejo)", mensual: "Básico", pro: "Pro con IA", tienda: "Tienda" };
@@ -26,12 +27,16 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-zinc-50 lg:flex">
       <aside className="border-b border-zinc-200 bg-white lg:min-h-screen lg:w-60 lg:border-b-0 lg:border-r">
-        <div className="px-5 py-4"><p className="font-display text-lg font-black">haceme <span className="text-hpred">precio</span></p><p className="text-[12px] font-semibold text-zinc-500">Administración</p></div>
-        <nav className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col">
+        <div className="flex items-center justify-between px-5 py-4">
+          <div><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-7 w-auto" /><p className="mt-1 text-[12px] font-semibold text-zinc-500">Administración</p></div>
+          <Link to="/panel" className="rounded-full px-3 py-2 text-[13px] font-semibold text-zinc-600 ring-1 ring-zinc-300 lg:hidden">← Mi panel</Link>
+        </div>
+        {/* En el celular, todas las secciones a la vista en una grilla (antes quedaban escondidas en una fila que había que deslizar). */}
+        <nav className="grid grid-cols-2 gap-1.5 px-3 pb-3 sm:grid-cols-3 lg:flex lg:flex-col lg:gap-1">
           {tabs.map(([k, l, Icon]) => (
-            <button key={k} onClick={() => setTab(k)} className={`flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-[14px] font-semibold ${tab === k ? "bg-ink text-white" : "text-zinc-600 hover:bg-zinc-100"}`}><Icon size={16} /> {l}</button>
+            <button key={k} onClick={() => setTab(k)} className={`flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-semibold lg:text-[14px] ${tab === k ? "bg-ink text-white" : "bg-zinc-50 text-zinc-700 ring-1 ring-zinc-200 hover:bg-zinc-100 lg:bg-transparent lg:ring-0"}`}><Icon size={16} className="shrink-0" /> <span className="leading-tight">{l}</span></button>
           ))}
-          <Link to="/panel" className="flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-[14px] font-semibold text-zinc-500 hover:bg-zinc-100 lg:mt-4">← Mi panel</Link>
+          <Link to="/panel" className="hidden items-center gap-2 rounded-xl px-3 py-2 text-[14px] font-semibold text-zinc-500 hover:bg-zinc-100 lg:mt-4 lg:flex">← Mi panel</Link>
         </nav>
       </aside>
       <main className="min-w-0 flex-1 p-4 lg:p-8">
@@ -97,7 +102,33 @@ function Vendedores() {
       <h1 className="font-display text-2xl font-extrabold">Vendedores</h1>
       <SearchBox value={q} onChange={setQ} placeholder="Buscar por mail, nombre o link" />
       {msg && <p className="mt-3 text-sm font-semibold text-emerald-700">{msg}</p>}
-      <div className="mt-4 overflow-x-auto rounded-2xl bg-white ring-1 ring-zinc-200">
+      {/* Celular: una tarjeta por vendedor (la tabla ancha queda para la compu). */}
+      <div className="mt-4 space-y-2 lg:hidden">
+        {rows?.map((s) => (
+          <div key={s.id} className="rounded-2xl bg-white p-4 ring-1 ring-zinc-200">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-semibold">{s.name || "(sin nombre)"} {s.is_admin && <span className="ml-1 rounded bg-ink px-1.5 text-[10px] text-white">admin</span>}</p>
+                <p className="truncate text-[13px] text-zinc-500">{s.email}</p>
+                {s.slug && <a href={`/${s.slug}`} target="_blank" rel="noreferrer" className="text-[13px] text-hpred underline">/{s.slug}</a>}
+              </div>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${TONE[s.status]}`}>{STATUS[s.status]}</span>
+            </div>
+            <p className="mt-2 text-[12px] text-zinc-600">Alta {date(s.created_at)}{s.status === "prueba" && ` · prueba hasta ${date(s.trial_ends_at)}`} · {s.products} publ. · {fmt(s.sold)} vendido · MP {s.mp ? "✓" : "—"}</p>
+            <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[13px]">
+              <select value={s.plan} onChange={(e) => act(s, "plan", e.target.value, `Cambiar el plan a ${PLAN[e.target.value]}`)} className="min-h-[38px] rounded-lg border border-zinc-300 px-2">
+                {Object.entries(PLAN).filter(([k]) => k !== "pase").map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+              <button onClick={() => act(s, "extender", 7, "Extender la prueba 7 días")} className="min-h-[38px] rounded-lg px-3 font-semibold ring-1 ring-zinc-300">+7 días</button>
+              {s.status !== "suspendida"
+                ? <button onClick={() => act(s, "estado", "suspendida", "Suspender la cuenta")} className="min-h-[38px] rounded-lg px-3 font-semibold text-rose-700 ring-1 ring-rose-200">Suspender</button>
+                : <button onClick={() => act(s, "estado", "activa", "Reactivar la cuenta")} className="min-h-[38px] rounded-lg px-3 font-semibold text-emerald-700 ring-1 ring-emerald-200">Reactivar</button>}
+            </div>
+          </div>
+        ))}
+        {rows && !rows.length && <p className="p-6 text-center text-sm text-zinc-500">No hay vendedores con esa búsqueda.</p>}
+        {!rows && <p className="p-6 text-center text-sm text-zinc-500">Cargando…</p>}
+      </div>
+      <div className="mt-4 hidden overflow-x-auto rounded-2xl bg-white ring-1 ring-zinc-200 lg:block">
         <table className="w-full min-w-[980px] text-left text-[13px]">
           <thead className="border-b border-zinc-200 text-[12px] text-zinc-500"><tr>
             <th className="p-3">Vendedor</th><th className="p-3">Plan</th><th className="p-3">Estado</th><th className="p-3">Alta</th>
