@@ -1,7 +1,15 @@
 import { supabase } from "./supabase.js";
 
 // Avisos push (Web Push). La clave pública VAPID es pública (va al navegador); la privada vive solo en Supabase.
-export const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
+// Se pide al servidor (edge push-key), así coincide siempre con la cargada en los secretos. VITE_VAPID_PUBLIC_KEY la pisa si existe.
+let keyPromise = null;
+export function getVapidKey() {
+  if (import.meta.env.VITE_VAPID_PUBLIC_KEY) return Promise.resolve(import.meta.env.VITE_VAPID_PUBLIC_KEY);
+  if (!keyPromise) keyPromise = supabase.functions.invoke("push-key", { method: "GET" })
+    .then(({ data }) => data?.publicKey || "").catch(() => "")
+    .then((k) => { if (!k) keyPromise = null; return k; });
+  return keyPromise;
+}
 
 const ua = () => (typeof navigator === "undefined" ? "" : navigator.userAgent);
 export const isIOS = () => /iPad|iPhone|iPod/.test(ua()) || (ua().includes("Mac") && typeof document !== "undefined" && "ontouchend" in document);
@@ -24,7 +32,7 @@ const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/
 export async function pushState() {
   if (isIOS() && !isStandalone()) return "ios-instalar";
   if (!pushSupported()) return "no-soportado";
-  if (!VAPID_PUBLIC_KEY) return "sin-configurar";
+  if (!(await getVapidKey())) return "sin-configurar";
   if (Notification.permission === "denied") return "bloqueado";
   const reg = await navigator.serviceWorker.getRegistration();
   const sub = await reg?.pushManager.getSubscription();
@@ -32,6 +40,8 @@ export async function pushState() {
 }
 
 export async function enablePush() {
+  const VAPID_PUBLIC_KEY = await getVapidKey();
+  if (!VAPID_PUBLIC_KEY) throw new Error("SIN_CLAVE");
   const perm = await Notification.requestPermission();
   if (perm !== "granted") throw new Error(perm === "denied" ? "BLOQUEADO" : "SIN_PERMISO");
   const reg = (await navigator.serviceWorker.getRegistration()) || (await navigator.serviceWorker.register("/sw.js"));
