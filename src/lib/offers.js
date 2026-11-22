@@ -68,7 +68,7 @@ const MSG = {
   OFERTA_INVALIDA: "Escribí cuánto ofrecés.",
   DEMASIADAS: "Hiciste muchas ofertas seguidas. Esperá un rato.",
   YA_TENES_UNA: "Ya tenés una oferta en curso para este producto.",
-  SIN_INTENTOS: "Ya usaste tus 2 ofertas para este producto.",
+  SIN_INTENTOS: "Ya usaste tus 3 ofertas para este producto.",
   TRATO_EN_CURSO: "El vendedor tiene un trato en curso por este producto. Probá más tarde.",
   YA_NO_VALE: "Esta oferta ya cambió de estado. Actualizá la página.",
   CONTRA_INVALIDA: "La contraoferta tiene que ser más que la oferta y no más que tu precio.",
