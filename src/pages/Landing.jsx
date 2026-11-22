@@ -5,7 +5,7 @@ import { LOGO_HORIZ } from "../prototype/brand.js";
 
 // Landing pública (responsive). No depende del prototipo: carga liviana.
 const PLANS = [
-  { k: "gratis", e: "🏷️", t: "Gratis", p: "$0", per: "/mes", d: "Publicás sin límite y pagás solo cuando vendés: 3% de las ventas que cobrás con Mercado Pago en la app. Sin comisión hasta febrero 2027.", f: ["Publicaciones sin límite", "Ofertas con mínimo oculto", "Tu vidriera con un link"], cta: "Empezar gratis", star: true },
+  { k: "gratis", e: "🏷️", t: "Gratis", p: "$0", per: "/mes", d: "Publicás sin límite y pagás solo cuando vendés: 3% de las ventas que cobrás con Mercado Pago en la app. 0% de comisión hasta fin de año.", f: ["Publicaciones sin límite", "Ofertas con mínimo oculto", "Tu vidriera con un link"], cta: "Empezar gratis", star: true },
   { k: "mensual", e: "🛍️", t: "Básico", p: "$10.000", per: "/mes", d: "Para el que vende seguido: sin comisión, todo lo que vendés es tuyo.", f: ["Todo lo del Gratis", "0% de comisión", "Conviene si vendés más de $330.000 por mes con Mercado Pago"], cta: "Probar 15 días gratis" },
   { k: "tienda", e: "🏬", t: "Tienda", p: "$40.000", per: "/mes", d: "Para locales: tu ventana de venta sin armar un e-commerce.", f: ["Talles, colores y stock", "Carrito y pedidos", "Promos, logo y portada · 0% de comisión"], cta: "Probar 15 días gratis" },
   { k: "pro", e: "✨", t: "Pro con IA", p: "$30.000", per: "/mes", d: "Todo lo del Básico, y la IA arma tus publicaciones desde las fotos.", f: ["Todo lo del Básico", "Título y descripción con IA", "Próximamente"], cta: "Anotarme", soon: true },
@@ -15,7 +15,7 @@ const FAQS = [
   ["¿El comprador tiene que descargar algo o crear una cuenta?", "No. Toca el link, ve fotos y precio, y oferta desde el navegador. Sin cuenta ni contraseña."],
   ["¿Alguien puede ver mi precio mínimo?", "No. Lo mínimo que aceptás queda guardado en el servidor y nunca le llega al comprador. Las ofertas más bajas se frenan solas."],
   ["¿Cómo cobro?", "Conectás tu Mercado Pago y el comprador paga con un botón: la plata va directo a tu cuenta y se confirma sola. También podés coordinar por WhatsApp como siempre. Nunca aceptes capturas como comprobante."],
-  ["¿Cobran comisión por venta?", "Solo en el plan Gratis: 3% de las ventas que cobrás con Mercado Pago dentro de la app (y recién desde febrero de 2027). Lo que cobrás en efectivo no paga nada. Con el Básico o la Tienda no pagás comisión."],
+  ["¿Cobran comisión por venta?", "Solo en el plan Gratis: 3% de las ventas que cobrás con Mercado Pago dentro de la app (y recién desde el 1 de enero de 2027). Lo que cobrás en efectivo no paga nada. Con el Básico o la Tienda no pagás comisión."],
   ["¿Puedo cancelar cuando quiera?", "Sí, con un botón desde «Mi cuenta». Seguís usando lo que pagaste hasta el final del período."],
 ];
 
