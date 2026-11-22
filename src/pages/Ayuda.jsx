@@ -21,7 +21,7 @@ const VENDO = [
   ["Me olvidé cómo entré", "Entrás siempre con «Continuar con Google», con el mismo mail. No necesitás contraseña nueva. Si no te acordás qué mail usaste, escribinos por WhatsApp."],
 ];
 const COMPRO = [
-  ["¿Cómo hago una oferta?", "Entrás al producto, tocás «Hacer mi oferta», ponés cuánto ofrecés, tu nombre y tu WhatsApp. Tenés 2 intentos por producto."],
+  ["¿Cómo hago una oferta?", "Entrás al producto, tocás «Hacer mi oferta», ponés cuánto ofrecés, tu nombre y tu WhatsApp. Tenés 3 intentos por producto."],
   ["¿Necesito crear una cuenta?", "No. Para comprar no hace falta cuenta. Te recomendamos tocar «Guardar mi oferta en WhatsApp»: así podés volver a verla desde cualquier celular."],
   ["Cerré la página, ¿perdí mi oferta?", "No. Si guardaste el link en WhatsApp, abrilo y la ves de nuevo. Si entrás desde el mismo celular y navegador, también aparece sola."],
   ["¿Cuánto tarda la respuesta?", "Si tu oferta llega al mínimo del vendedor, puede aceptarse al instante. Si no, el vendedor tiene 12 horas para responder."],

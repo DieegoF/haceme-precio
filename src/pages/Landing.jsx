@@ -185,7 +185,7 @@ function Features() {
   const items = [
     [Lock, "Mínimo oculto", "Ponés lo mínimo que aceptás. Nadie lo ve, y las ofertas más bajas se frenan solas."],
     [Zap, "Venta automática", "Si ofrecen cerca de tu precio, se acepta sola y te avisamos. Vendés mientras dormís."],
-    [Repeat2, "Sin regateo eterno", "Cada comprador tiene 2 intentos. Podés contraofertar una vez y listo."],
+    [Repeat2, "Sin regateo eterno", "Cada comprador tiene 3 intentos. Podés contraofertar una vez y listo."],
     [Clock3, "Todo con tiempo", "12 horas para responder y 12 para cerrar. Si la oferta te sirve, se acepta sola aunque estés durmiendo."],
     [Share2, "Link que se ve bien", "Al pegarlo en WhatsApp o Instagram aparece la foto, el título y el precio."],
     [Store, "Tu vidriera o tu tienda", "Todo lo que vendés en un link. Si tenés local: talles, colores, carrito y pedidos."],

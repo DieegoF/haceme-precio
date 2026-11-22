@@ -4,6 +4,9 @@ import { buyerToken, submitOffer, getMyOffers, answerCounter, offerError, savedB
 import { fmt, parseMoney, moneyInput } from "../lib/format.js";
 import { ReviewBox } from "./Reviews.jsx";
 
+// Intentos por comprador y producto. Tiene que coincidir con max_intentos de submit_offer (servidor).
+const MAX_INTENTOS = 3;
+
 // Todo lo del comprador en la página del producto: el botón, la hoja para ofertar y el estado de su oferta.
 export default function BuyerOffer({ product, seller }) {
   const [offers, setOffers] = useState(null);
@@ -23,7 +26,7 @@ export default function BuyerOffer({ product, seller }) {
   const live = last && ["pendiente", "contraoferta"].includes(last.status);
   useEffect(() => { if (!live) return; const t = setInterval(load, 8000); return () => clearInterval(t); }, [live, load]);
 
-  const attemptsLeft = Math.max(0, 2 - (offers?.length || 0));
+  const attemptsLeft = Math.max(0, MAX_INTENTOS - (offers?.length || 0));
   const canOffer = !last || (["rechazada_auto", "rechazada", "expirada", "cancelada"].includes(last.status) && attemptsLeft > 0);
 
   return (
@@ -33,7 +36,7 @@ export default function BuyerOffer({ product, seller }) {
         {canOffer ? (
           <button onClick={() => setOpen(true)} className="flex min-h-[52px] w-full flex-col items-center justify-center rounded-2xl bg-hpred text-white">
             <span className="text-[16px] font-semibold">{last ? "Hacer otra oferta" : "Hacer mi oferta"}</span>
-            <span className="text-[11px] text-white/80">{attemptsLeft === 2 ? "Tenés 2 intentos" : "Te queda 1 intento"}</span>
+            <span className="text-[11px] text-white/80">{attemptsLeft === MAX_INTENTOS ? `Tenés ${MAX_INTENTOS} intentos` : attemptsLeft === 1 ? "Te queda 1 intento" : `Te quedan ${attemptsLeft} intentos`}</span>
           </button>
         ) : (
           <a href="#mi-oferta" className="flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-ink text-[15px] font-semibold text-white">Ver mi oferta</a>
@@ -78,7 +81,7 @@ function OfferSheet({ product, attemptsLeft, onClose, onDone }) {
           <h2 className="font-display text-xl font-extrabold">¿Cuánto ofrecés?</h2>
           <button type="button" onClick={onClose} aria-label="Cerrar" className="rounded-full bg-zinc-100 p-1.5"><X size={18} /></button>
         </div>
-        <p className="mt-1 text-[13px] text-zinc-600">Publicado a <b>{fmt(product.list_price)}</b>. {attemptsLeft === 2 ? "Tenés 2 intentos." : "Es tu último intento."}</p>
+        <p className="mt-1 text-[13px] text-zinc-600">Publicado a <b>{fmt(product.list_price)}</b>. {attemptsLeft === MAX_INTENTOS ? `Tenés ${MAX_INTENTOS} intentos.` : attemptsLeft === 1 ? "Es tu último intento." : `Te quedan ${attemptsLeft} intentos.`}</p>
 
         <input inputMode="numeric" autoFocus value={amount} onChange={(e) => setAmount(moneyInput(e.target.value))} placeholder="$ 0" aria-label="Tu oferta"
           className="mt-4 w-full rounded-2xl border-2 border-zinc-300 bg-white px-4 py-4 text-center font-display text-3xl font-black outline-none focus:border-hpred" />
@@ -142,7 +145,7 @@ function StatusCard({ o, product, seller, attemptsLeft, onReload, onRetry }) {
   const summary = `✅ Trato acordado en Haceme Precio\nProducto: ${product.title}\nPrecio acordado: ${fmt(o.amount)}\nVendedor: ${seller.name}\nLink: ${window.location.href}\n\nRecordá verificar el dinero acreditado en tu cuenta antes de entregar el producto.`;
   const copy = async () => { try { await navigator.clipboard.writeText(summary); setCopied(true); setTimeout(() => setCopied(false), 2500); } catch { /* sin portapapeles */ } };
   const box = "mx-0 mt-5 scroll-mt-20 rounded-2xl p-4 ring-1";
-  const retry = attemptsLeft > 0 && <button onClick={onRetry} className="mt-3 text-[13px] font-semibold text-hpred underline">Hacer otra oferta (te queda {attemptsLeft})</button>;
+  const retry = attemptsLeft > 0 && <button onClick={onRetry} className="mt-3 text-[13px] font-semibold text-hpred underline">Hacer otra oferta ({attemptsLeft === 1 ? "te queda 1" : `te quedan ${attemptsLeft}`})</button>;
 
   if (o.status === "pendiente") return (
     <section id="mi-oferta" className={box + " bg-amber-50 ring-amber-200"}>
@@ -189,7 +192,7 @@ function StatusCard({ o, product, seller, attemptsLeft, onReload, onRetry }) {
     <section id="mi-oferta" className={box + " bg-zinc-50 ring-zinc-200"}>
       <p className="flex items-center gap-1.5 font-semibold"><XCircle size={17} className="text-zinc-500" /> {fmt(o.amount)} es poco para este vendedor</p>
       {o.suggested_amount && <p className="mt-1 text-[13px] text-zinc-700">Las ofertas cerca de <b>{fmt(o.suggested_amount)}</b> tienen más chances.</p>}
-      {retry || <p className="mt-2 text-[13px] text-zinc-600">Ya usaste tus 2 intentos.</p>}
+      {retry || <p className="mt-2 text-[13px] text-zinc-600">Ya usaste tus 3 intentos.</p>}
     </section>
   );
   const text = { rechazada: "El vendedor no aceptó tu oferta.", expirada: "Tu oferta se venció sin respuesta.", cancelada: "El trato se canceló." }[o.status] || "Tu oferta cambió de estado.";
@@ -197,7 +200,7 @@ function StatusCard({ o, product, seller, attemptsLeft, onReload, onRetry }) {
     <section id="mi-oferta" className={box + " bg-zinc-50 ring-zinc-200"}>
       <p className="font-semibold">{text}</p>
       <p className="text-[13px] text-zinc-600">Habías ofrecido {fmt(o.amount)}.</p>
-      {retry || <p className="mt-2 text-[13px] text-zinc-600">Ya usaste tus 2 intentos. <MessageCircle size={12} className="inline" /> Mirá otras cosas del vendedor.</p>}
+      {retry || <p className="mt-2 text-[13px] text-zinc-600">Ya usaste tus 3 intentos. <MessageCircle size={12} className="inline" /> Mirá otras cosas del vendedor.</p>}
     </section>
   );
 }
