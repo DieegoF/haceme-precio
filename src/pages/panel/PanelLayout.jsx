@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase.js";
 import { useSeller } from "../../lib/useSeller.js";
 import { slugify, validSlug } from "../../lib/slug.js";
 import { BrandBar, Phone } from "../../components/Brand.jsx";
+import { LOGO_HORIZ } from "../../prototype/brand.js";
 import StoreSetup from "./StoreSetup.jsx";
 import PlanBanner from "../../components/PlanBanner.jsx";
 import { PushBanner } from "../../components/PushToggle.jsx";
@@ -28,7 +29,7 @@ export default function PanelLayout() {
         : (
           <div className="flex-1 lg:flex">
             <aside className="hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-60 lg:shrink-0 lg:flex-col lg:border-r lg:border-zinc-200 lg:px-3 lg:py-5">
-              <p className="px-3 font-display text-lg font-black">haceme <span className="text-hpred">precio</span></p>
+              <NavLink to="/panel" end aria-label="Haceme Precio, mi panel" className="px-3"><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-7 w-auto" /></NavLink>
               <p className="truncate px-3 text-[12px] font-semibold text-zinc-500">{seller.name}</p>
               <nav className="mt-5 flex flex-col gap-1">
                 {seller.is_store ? <SideTab to="/panel" end Icon={ShoppingBag} label="Pedidos" /> : <SideTab to="/panel" end Icon={Inbox} label="Ofertas" />}

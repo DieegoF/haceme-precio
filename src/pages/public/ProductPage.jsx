@@ -147,7 +147,7 @@ function TopBar({ right, seller }) {
         <Link to={`/${seller.slug}`} className="flex min-h-[40px] min-w-0 items-center gap-1.5 rounded-full bg-zinc-100 py-2 pl-2.5 pr-4 text-[14px] font-semibold">
           <ChevronLeft size={18} className="shrink-0" /> <span className="truncate">Volver a {seller.name}</span>
         </Link>
-      ) : <Link to="/" aria-label="Haceme Precio"><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-6 w-auto" /></Link>}
+      ) : <img src={LOGO_HORIZ} alt="Haceme Precio" className="h-6 w-auto" />}
       {right}
     </header>
   );
