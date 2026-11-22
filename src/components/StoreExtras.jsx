@@ -30,8 +30,8 @@ export function StoreFaq({ store }) {
   const faq = store?.faq || [];
   if (!faq.length) return null;
   return (
-    <section className="mt-8 px-4 lg:max-w-3xl lg:px-8">
-      <h2 className="px-1 font-display text-lg font-extrabold">Preguntas frecuentes</h2>
+    <section className="min-w-0">
+      <h2 className="font-display text-xl font-extrabold">Preguntas frecuentes</h2>
       <ul className="mt-2 divide-y divide-zinc-100 rounded-2xl ring-1 ring-zinc-200">
         {faq.map((f, i) => (
           <li key={i}>
