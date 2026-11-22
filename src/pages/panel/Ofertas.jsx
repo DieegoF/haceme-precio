@@ -106,7 +106,10 @@ function Pending({ o, onAct }) {
   const now = useNow();
   const [counter, setCounter] = useState(null);
   const [busy, setBusy] = useState(false);
-  const suggested = Math.min(o.list_price, Math.round(((o.amount + o.list_price) / 2) / 1000) * 1000);
+  // Contraoferta sugerida: a mitad de camino entre la oferta y el precio, redondeada según el precio.
+  const step = o.list_price >= 20000 ? 1000 : o.list_price >= 2000 ? 100 : o.list_price >= 200 ? 10 : 1;
+  const mid = Math.round(((o.amount + o.list_price) / 2) / step) * step;
+  const suggested = Math.min(o.list_price, Math.max(mid, Math.ceil((o.amount + 1) / step) * step));
   const run = async (...a) => { setBusy(true); await onAct(o, ...a); setBusy(false); };
   const c = parseMoney(counter);
   return (

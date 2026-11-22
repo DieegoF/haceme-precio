@@ -52,7 +52,12 @@ function OfferSheet({ product, attemptsLeft, onClose, onDone }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const n = parseMoney(amount);
-  const quick = [5, 10, 15].map((p) => Math.round((product.list_price * (100 - p)) / 100 / 500) * 500);
+  // Montos sugeridos (-5/-10/-15%). El redondeo depende del precio: $500 en cosas caras, $1 en las baratas.
+  const price = Number(product.list_price) || 0;
+  const step = price >= 20000 ? 500 : price >= 2000 ? 100 : price >= 200 ? 10 : 1;
+  const quick = [5, 10, 15]
+    .map((p) => ({ p, q: Math.floor((price * (100 - p)) / 100 / step) * step }))
+    .filter((x, i, all) => x.q > 0 && x.q < price && all.findIndex((y) => y.q === x.q) === i);
   const input = "mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-3 text-base outline-none focus:border-zinc-900";
 
   const send = async (e) => {
@@ -78,9 +83,9 @@ function OfferSheet({ product, attemptsLeft, onClose, onDone }) {
         <input inputMode="numeric" autoFocus value={amount} onChange={(e) => setAmount(moneyInput(e.target.value))} placeholder="$ 0" aria-label="Tu oferta"
           className="mt-4 w-full rounded-2xl border-2 border-zinc-300 bg-white px-4 py-4 text-center font-display text-3xl font-black outline-none focus:border-hpred" />
         <div className="mt-2 flex gap-2">
-          {quick.map((q, i) => (
+          {quick.map(({ p, q }) => (
             <button type="button" key={q} onClick={() => setAmount(moneyInput(q))} className={`flex-1 rounded-xl py-2 text-[13px] font-semibold ${n === q ? "bg-ink text-white" : "bg-zinc-100"}`}>
-              {fmt(q)}<span className="block text-[10px] font-normal opacity-70">-{[5, 10, 15][i]}%</span>
+              {fmt(q)}<span className="block text-[10px] font-normal opacity-70">-{p}%</span>
             </button>
           ))}
         </div>
