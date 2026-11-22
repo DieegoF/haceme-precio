@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import { useAuth } from "../lib/auth.jsx";
 import { BrandBar, Phone } from "../components/Brand.jsx";
+import { signOutAndForgetDevice } from "../lib/push.js";
 
 const PLANS = {
   gratis: "Gratis · sin costo fijo, 3% solo en ventas con Mercado Pago",
@@ -34,7 +35,7 @@ export default function Login() {
       <main className="px-5 pb-10 pt-8">
         <h1 className="font-display text-2xl font-extrabold">Ya entraste con otra cuenta</h1>
         <p className="mt-2 text-sm text-zinc-600">Estás como <b>{session.user.email}</b>. Para crear una cuenta nueva con el plan <b>{PLANS[plan]}</b>, primero cerrá esta sesión.</p>
-        <button onClick={() => supabase.auth.signOut()} className={btn}>Cerrar sesión y crear otra cuenta</button>
+        <button onClick={() => signOutAndForgetDevice()} className={btn}>Cerrar sesión y crear otra cuenta</button>
         <button onClick={() => nav("/panel")} className="mt-3 flex min-h-[48px] w-full items-center justify-center rounded-2xl text-[15px] font-semibold ring-1 ring-zinc-300">Seguir con mi cuenta</button>
       </main>
     </Phone>

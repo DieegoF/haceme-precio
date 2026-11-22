@@ -36,7 +36,16 @@ export async function pushState() {
   if (Notification.permission === "denied") return "bloqueado";
   const reg = await navigator.serviceWorker.getRegistration();
   const sub = await reg?.pushManager.getSubscription();
-  return sub && Notification.permission === "granted" ? "activo" : "apagado";
+  if (!sub || Notification.permission !== "granted") return "apagado";
+  // El navegador guarda un solo registro por dispositivo: confirmamos que sea de ESTA cuenta (si entraste con otra, hay que activarlo de nuevo).
+  const { data } = await supabase.from("push_subscriptions").select("id").eq("endpoint", sub.endpoint).maybeSingle();
+  return data ? "activo" : "apagado";
+}
+
+// Cerrar sesión: primero se borra el aviso de este dispositivo (así la cuenta no le sigue llegando a otra persona).
+export async function signOutAndForgetDevice() {
+  try { await Promise.race([disablePush(), new Promise((r) => setTimeout(r, 4000))]); } catch { /* nada */ }
+  await supabase.auth.signOut();
 }
 
 export async function enablePush() {
@@ -55,6 +64,7 @@ export async function enablePush() {
 }
 
 export async function disablePush() {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
   const reg = await navigator.serviceWorker.getRegistration();
   const sub = await reg?.pushManager.getSubscription();
   if (!sub) return;
