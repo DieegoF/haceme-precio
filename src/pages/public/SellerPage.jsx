@@ -52,13 +52,13 @@ export default function SellerPage() {
   };
 
   return (
-    <Phone wide="full" className={seller.store ? "pb-28" : "pb-10"}>
+    <Phone wide className={seller.store ? "pb-28" : "pb-10"}>
       <header className="flex items-center justify-between px-4 py-3 lg:px-8">
         <Link to="/" aria-label="Haceme Precio"><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-6 w-auto" /></Link>
         <button onClick={share} className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-[12px] font-semibold"><Share2 size={13} /> {shared || "Compartir"}</button>
       </header>
       {seller.store ? <StoreHeader seller={seller} store={seller.store} reviews={reviews} /> : (
-      <section className="px-5 pt-2 lg:px-8">
+      <section className="px-4 pt-2 lg:px-8 lg:pt-4">
         <div className="flex items-center gap-3">
           <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-ink font-display text-2xl font-black text-white">{seller.name.charAt(0).toUpperCase()}</span>
           <div className="min-w-0">
@@ -104,9 +104,13 @@ export default function SellerPage() {
         </ul>
         </>
       )}
-      <ReviewList summary={reviews} />
-      {seller.store && <StoreFaq store={seller.store} />}
-      <div className="mt-8 flex justify-center pb-28"><ReportButton kind="vendedor" target={seller.id} /></div>
+      {(reviews?.count > 0 || seller.store?.faq?.length > 0) && (
+        <div className={`mt-10 grid gap-8 px-4 lg:px-8 ${reviews?.count > 0 && seller.store?.faq?.length > 0 ? "lg:grid-cols-2" : ""}`}>
+          <ReviewList summary={reviews} oneColumn={seller.store?.faq?.length > 0} />
+          {seller.store && <StoreFaq store={seller.store} />}
+        </div>
+      )}
+      <div className="mt-10 flex justify-center pb-6"><ReportButton kind="vendedor" target={seller.id} /></div>
       {seller.store && <CartBar seller={seller} store={seller.store} />}
     </Phone>
   );
@@ -116,7 +120,8 @@ function StoreHeader({ seller, store, reviews }) {
   return (
     <>
       <div className="lg:px-8"><StoreBanner banner={store.banner_url} color={store.color} className="h-32 sm:h-40 lg:h-56 lg:rounded-3xl" /></div>
-      <section className="px-5 pb-2 lg:px-12">
+      <section className="px-5 pb-2 lg:flex lg:items-end lg:justify-between lg:gap-10 lg:px-12">
+        <div className="min-w-0">
         <div className="-mt-11 flex items-end justify-between">
           <StoreAvatar name={seller.name} logo={store.logo_url} color={store.color} size={88} />
           {seller.phone_verified && <span className="mb-1 flex items-center gap-1 rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700"><BadgeCheck size={13} /> Verificada</span>}
@@ -127,13 +132,16 @@ function StoreHeader({ seller, store, reviews }) {
         <p className="mt-2 flex items-start gap-1.5 text-[13px] text-zinc-500"><MapPin size={14} className="mt-0.5 shrink-0" /> {store.address}{store.hours ? ` · ${store.hours}` : ""}</p>
         <p className="mt-1 flex items-start gap-1.5 text-[13px] text-zinc-500"><Truck size={14} className="mt-0.5 shrink-0" /> {[store.pickup && "Retiro en el local", store.shipping_enabled && `Envíos: ${store.shipping_note || "a coordinar"}`].filter(Boolean).join(" · ")}</p>
         <FreeShipNote store={store} className="mt-1" />
-        <PromoBanner store={store} className="mt-3" />
+        </div>
+        <div className="lg:w-[380px] lg:shrink-0">
+        <PromoBanner store={store} className="mt-3 lg:max-w-none" />
         {store.whatsapp && (
           <a href={waLink(store.whatsapp, `¡Hola ${seller.name}! Vi tu tienda en Haceme Precio 🙂`)} target="_blank" rel="noreferrer"
-            style={{ backgroundColor: store.color }} className="mt-3 flex min-h-[46px] items-center lg:max-w-sm justify-center gap-1.5 rounded-2xl text-[14px] font-semibold text-white">
+            style={{ backgroundColor: store.color }} className="mt-3 flex min-h-[46px] items-center justify-center gap-1.5 rounded-2xl text-[14px] font-semibold text-white">
             <MessageCircle size={16} /> Consultar por WhatsApp
           </a>
         )}
+        </div>
       </section>
     </>
   );

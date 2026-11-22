@@ -28,13 +28,13 @@ export function useSellerReviews(sellerId) {
 }
 
 // Lista pública de opiniones.
-export function ReviewList({ summary }) {
+export function ReviewList({ summary, oneColumn = false }) {
   if (!summary?.count) return null;
   return (
-    <section id="opiniones" className="mx-5 mt-8 lg:mx-0">
+    <section id="opiniones" className="min-w-0 scroll-mt-4">
       <h2 className="font-display text-xl font-extrabold">Opiniones</h2>
       <p className="mt-0.5 flex items-center gap-1.5 text-[13px] text-zinc-600"><Stars value={summary.avg} size={16} /> <b>{avgText(summary.avg)}</b> de 5 · {summary.count} {summary.count === 1 ? "opinión" : "opiniones"} de gente que compró</p>
-      <ul className="mt-3 grid gap-2 lg:grid-cols-2">
+      <ul className={`mt-3 grid gap-2 ${oneColumn ? "" : "lg:grid-cols-2"}`}>
         {summary.items.map((r) => (
           <li key={r.id} className="rounded-2xl bg-white p-3 ring-1 ring-zinc-200">
             <div className="flex items-center justify-between gap-2">
