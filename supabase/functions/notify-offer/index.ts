@@ -1,7 +1,9 @@
 // Edge Function: manda al vendedor el aviso por email de una oferta.
 // Recibe solo { offer_id }. No confía en nada más: vuelve a leer todo con service role.
 // Cada aviso sale una sola vez (offer_notifications). Requiere el secreto RESEND_API_KEY.
+// También manda el aviso push a los dispositivos del vendedor (si los activó).
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendPush } from "./_push.ts";
 
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const FROM = Deno.env.get("EMAIL_FROM") ?? "Haceme Precio <avisos@mail.diegodev.com.ar>";
@@ -16,11 +18,11 @@ Deno.serve(async (req) => {
   if (typeof offer_id !== "string" || !/^[0-9a-f-]{36}$/i.test(offer_id)) return json({ error: "offer_id" }, 400);
 
   const { data: o } = await sb.from("offers")
-    .select("id, status, reason, amount, expires_at, close_by, buyer_name, seller_id, products(title, slug, photos, list_price)")
+    .select("id, status, reason, amount, expires_at, close_by, buyer_name, seller_id, payment_status, paid_amount, products(title, slug, photos, list_price)")
     .eq("id", offer_id).maybeSingle();
   if (!o) return json({ skipped: "no_offer" });
 
-  const kind = o.status === "pendiente" ? "nueva" : o.status === "aceptada" && o.reason === "auto" ? "auto" : o.status === "aceptada" && o.reason === "contraoferta_aceptada" ? "contra_aceptada" : null;
+  const kind = o.payment_status === "pagado" ? "pagado" : o.status === "pendiente" ? "nueva" : o.status === "aceptada" && o.reason === "auto" ? "auto" : o.status === "aceptada" && o.reason === "contraoferta_aceptada" ? "contra_aceptada" : null;
   if (!kind) return json({ skipped: "no_event" });
 
   // Reserva el aviso: si ya existía, no se manda de nuevo.
@@ -48,6 +50,12 @@ Deno.serve(async (req) => {
       body: `Ofreció <b>${money(o.amount)}</b> por <b>${esc(p.title)}</b>, cerca de tu precio, así que se aceptó sola. Escribile por WhatsApp desde tu panel para coordinar. El trato queda reservado hasta las <b>${hora(o.close_by)} h</b>.`,
       cta: "Ver el trato y escribirle",
     },
+    pagado: {
+      subject: `Te pagaron ${money(o.paid_amount ?? o.amount)} por ${p.title}`,
+      title: `${esc(o.buyer_name)} ya pagó ${money(o.paid_amount ?? o.amount)}`,
+      body: `Mercado Pago confirmó el pago de <b>${esc(p.title)}</b>. Escribile por WhatsApp desde tu panel para coordinar la entrega.`,
+      cta: "Ver la venta",
+    },
     contra_aceptada: {
       subject: `Aceptaron tu contraoferta de ${money(o.amount)}`,
       title: `${esc(o.buyer_name)} aceptó ${money(o.amount)}`,
@@ -55,6 +63,14 @@ Deno.serve(async (req) => {
       cta: "Ver el trato y escribirle",
     },
   }[kind];
+
+  const push = {
+    nueva: { title: `Nueva oferta: ${money(o.amount)}`, body: `${o.buyer_name} ofrece ${money(o.amount)} por ${p.title}. Tenés hasta las ${hora(o.expires_at)} h.` },
+    auto: { title: `¡Vendiste! Trato por ${money(o.amount)}`, body: `Se aceptó sola la oferta de ${o.buyer_name} por ${p.title}. Escribile para coordinar.` },
+    contra_aceptada: { title: `${o.buyer_name} aceptó ${money(o.amount)}`, body: `Trato hecho por ${p.title}. Escribile para coordinar.` },
+    pagado: { title: `💰 Te pagaron ${money(o.paid_amount ?? o.amount)}`, body: `${o.buyer_name} pagó ${p.title} con Mercado Pago.` },
+  }[kind];
+  await sendPush(sb, o.seller_id, { ...push, url: "/panel", tag: `oferta-${o.id}` }).catch(() => null);
 
   const html = `<!doctype html><html><body style="margin:0;background:#FAF9F7;font-family:Arial,Helvetica,sans-serif;color:#1C1B19">
   <div style="max-width:480px;margin:0 auto;padding:24px">

@@ -90,6 +90,9 @@ function render(meta, url) {
 const app = express();
 app.disable("x-powered-by");
 app.set("trust proxy", true); // Railway termina HTTPS adelante: así req.protocol da "https"
+// El service worker no se cachea: así cada versión nueva de los avisos llega enseguida.
+app.get("/sw.js", (_req, res) => res.set("Cache-Control", "no-cache").type("application/javascript").sendFile(path.join(DIST, "sw.js")));
+app.get("/manifest.webmanifest", (_req, res) => res.set("Cache-Control", "no-cache").type("application/manifest+json").sendFile(path.join(DIST, "manifest.webmanifest")));
 app.use("/assets", express.static(path.join(DIST, "assets"), { immutable: true, maxAge: "1y" }));
 app.use(express.static(DIST, { index: false, maxAge: "1h" }));
 app.get("/healthz", (_req, res) => res.type("text").send("ok"));

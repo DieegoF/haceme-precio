@@ -6,6 +6,7 @@ import { BrandBar } from "../../components/Brand.jsx";
 import StoreEditor from "./StoreEditor.jsx";
 import MpConnect from "../../components/MpConnect.jsx";
 import PlanCard from "../../components/PlanCard.jsx";
+import PushToggle from "../../components/PushToggle.jsx";
 
 
 export default function Cuenta() {
@@ -30,6 +31,7 @@ export default function Cuenta() {
         ) : <PlanCard account={account} onPaid={reload} />}
 
         {account?.is_admin && <button onClick={() => nav("/admin")} className="mt-4 w-full rounded-2xl bg-zinc-900 py-3 text-[14px] font-semibold text-white">Panel de administración</button>}
+        {!seller.is_demo && <PushToggle />}
         {!seller.is_demo && <MpConnect plan={account?.plan} />}
         {seller.is_store && store && <StoreEditor seller={seller} store={store} onSaved={reload} />}
 
