@@ -8,7 +8,7 @@ import { BrandBar } from "../../components/Brand.jsx";
 export default function StoreSetup({ seller, store, onDone }) {
   const [step, setStep] = useState(1);
   const [f, setF] = useState({
-    tagline: store?.tagline || "", logo_url: store?.logo_url || null, banner_url: store?.banner_url || null, color: store?.color || BRAND_COLORS[0],
+    tagline: store?.tagline || "", logo_url: store?.logo_url || null, banner_url: store?.banner_url || null, banner_pos: store?.banner_pos || "center", color: store?.color || BRAND_COLORS[0],
     address: store?.address || "", hours: store?.hours || "Lun a Sáb de 10 a 19 h", whatsapp: store?.whatsapp || "",
     pickup: store?.pickup ?? true, shipping_enabled: store?.shipping_enabled ?? false, shipping_note: store?.shipping_note || "",
   });

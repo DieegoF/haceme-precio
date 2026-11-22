@@ -11,9 +11,13 @@ export function StoreAvatar({ name = "?", logo, color = "#111111", size = 64 }) 
     : <span style={{ width: size, height: size, backgroundColor: color, fontSize: size * 0.42 }} className={`flex shrink-0 items-center justify-center rounded-2xl font-display font-black text-white ${ring}`}>{name.trim().charAt(0).toUpperCase()}</span>;
 }
 
-export function StoreBanner({ banner, color = "#111111", className = "h-32" }) {
+// Portada: proporción fija (3:1 en el celular, 4:1 en compu) para que el recorte sea parecido en todos lados.
+// pos = qué parte de la foto se ve: "top" | "center" | "bottom".
+export const BANNER_POS = { top: "object-top", center: "object-center", bottom: "object-bottom" };
+export const BANNER_RATIO = "aspect-[3/1] lg:aspect-[4/1]";
+export function StoreBanner({ banner, color = "#111111", pos = "center", className = BANNER_RATIO }) {
   return banner
-    ? <img src={banner} alt="" className={`${className} w-full object-cover`} />
+    ? <img src={banner} alt="" className={`${className} w-full object-cover ${BANNER_POS[pos] || BANNER_POS.center}`} />
     : <div className={`${className} w-full`} style={{ background: `linear-gradient(135deg, ${color} 0%, ${color}CC 55%, #00000055 100%)` }} />;
 }
 
@@ -36,7 +40,7 @@ export function BrandEditor({ userId, name, tagline, value, onChange }) {
     <div className="space-y-4">
       <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-zinc-200">
         <button type="button" onClick={() => bannerRef.current?.click()} className="relative block w-full" aria-label="Cambiar portada">
-          <StoreBanner banner={value.banner_url} color={value.color} className="h-24" />
+          <StoreBanner banner={value.banner_url} color={value.color} pos={value.banner_pos} className="aspect-[3/1]" />
           <span className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold text-white">
             {busy === "banner" ? <Loader2 size={12} className="animate-spin" /> : <Camera size={12} />} {value.banner_url ? "Cambiar portada" : "Subir portada"}
           </span>
@@ -60,7 +64,20 @@ export function BrandEditor({ userId, name, tagline, value, onChange }) {
         <button type="button" onClick={() => logoRef.current?.click()} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl text-[13px] font-semibold ring-1 ring-zinc-300"><ImageIcon size={14} /> {value.logo_url ? "Cambiar logo" : "Subir logo"}</button>
         <button type="button" onClick={() => bannerRef.current?.click()} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl text-[13px] font-semibold ring-1 ring-zinc-300"><ImageIcon size={14} /> {value.banner_url ? "Cambiar portada" : "Subir portada"}</button>
       </div>
-      <p className="text-[11px] text-zinc-500">Logo cuadrado, como el de tu Instagram. Portada horizontal: una foto del local o de tu ropa. Las recortamos solas.</p>
+      <p className="text-[11px] text-zinc-500">Logo cuadrado, como el de tu Instagram. Portada: una foto <b>horizontal</b> del local o de tu ropa (ideal 1600 × 400). Arriba ves cómo queda.</p>
+      {value.banner_url && (
+        <div>
+          <p className="text-[13px] font-semibold">¿Qué parte de la portada se ve?</p>
+          <div className="mt-1.5 grid grid-cols-3 gap-2">
+            {[["top", "Arriba"], ["center", "Centro"], ["bottom", "Abajo"]].map(([k, l]) => (
+              <button key={k} type="button" onClick={() => onChange({ ...value, banner_pos: k })}
+                className={`min-h-[40px] rounded-xl text-[13px] font-semibold ${(value.banner_pos || "center") === k ? "bg-ink text-white" : "ring-1 ring-zinc-300"}`}>{l}</button>
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] text-zinc-500">Así se ve en una compu (más ancha):</p>
+          <StoreBanner banner={value.banner_url} color={value.color} pos={value.banner_pos} className="mt-1 aspect-[4/1] rounded-xl" />
+        </div>
+      )}
       {(value.logo_url || value.banner_url) && (
         <div className="flex gap-3 text-[12px]">
           {value.logo_url && <button type="button" onClick={() => onChange({ ...value, logo_url: null })} className="font-semibold text-zinc-500 underline">Quitar logo</button>}

@@ -39,7 +39,7 @@ export default function StoreEditor({ seller, store, onSaved }) {
     const faq = f.faqList.filter((x) => x.q.trim() && x.a.trim()).map((x) => ({ q: x.q.trim(), a: x.a.trim() }));
     const { error } = await supabase.from("stores").update({
       promo, faq, free_ship_from: f.shipping_enabled && parseMoney(f.freeFrom) > 0 ? parseMoney(f.freeFrom) : null,
-      tagline: f.tagline?.trim() || null, logo_url: f.logo_url, banner_url: f.banner_url, color: f.color,
+      tagline: f.tagline?.trim() || null, logo_url: f.logo_url, banner_url: f.banner_url, banner_pos: f.banner_pos || "center", color: f.color,
       address: f.address?.trim(), hours: f.hours?.trim() || null, whatsapp: (f.whatsapp || "").replace(/\D/g, ""),
       pickup: f.pickup, shipping_enabled: f.shipping_enabled, shipping_note: f.shipping_enabled ? f.shipping_note?.trim() || "A coordinar" : null,
     }).eq("seller_id", seller.id);

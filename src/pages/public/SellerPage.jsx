@@ -119,7 +119,7 @@ export default function SellerPage() {
 function StoreHeader({ seller, store, reviews }) {
   return (
     <>
-      <div className="lg:px-8"><StoreBanner banner={store.banner_url} color={store.color} className="h-32 sm:h-40 lg:h-56 lg:rounded-3xl" /></div>
+      <div className="lg:px-8"><StoreBanner banner={store.banner_url} color={store.color} pos={store.banner_pos} className="aspect-[3/1] lg:aspect-[4/1] lg:rounded-3xl" /></div>
       <section className="px-5 pb-2 lg:flex lg:items-end lg:justify-between lg:gap-10 lg:px-12">
         <div className="min-w-0">
         <div className="-mt-11 flex items-end justify-between">
