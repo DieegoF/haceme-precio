@@ -1,19 +1,19 @@
 import React from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { supabase } from "../../lib/supabase.js";
 import { useAuth } from "../../lib/auth.jsx";
 import { BrandBar } from "../../components/Brand.jsx";
 import StoreEditor from "./StoreEditor.jsx";
 import MpConnect from "../../components/MpConnect.jsx";
 import PlanCard from "../../components/PlanCard.jsx";
 import PushToggle from "../../components/PushToggle.jsx";
+import { signOutAndForgetDevice } from "../../lib/push.js";
 
 
 export default function Cuenta() {
   const { seller, account, store, reload } = useOutletContext();
   const { session } = useAuth();
   const nav = useNavigate();
-  const salir = async () => { await supabase.auth.signOut(); nav("/", { replace: true }); };
+  const salir = async () => { await signOutAndForgetDevice(); nav("/", { replace: true }); };
   return (
     <>
       <BrandBar />
