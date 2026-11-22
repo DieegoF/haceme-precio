@@ -11,8 +11,17 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.join(__dirname, "dist");
 const INDEX = fs.readFileSync(path.join(DIST, "index.html"), "utf8");
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY; // clave pública: solo lee lo que RLS deja ver a cualquiera
+// Claves públicas: solo leen lo que RLS deja ver a cualquiera. Misma regla que el frontend:
+// los dominios de producción usan la base real; el resto (vistas previas, Railway) la de pruebas.
+const PROD_HOSTS = (process.env.VITE_PROD_HOSTS || "").split(",").map((h) => h.trim().toLowerCase()).filter(Boolean);
+const DB = {
+  dev: { url: process.env.VITE_SUPABASE_URL, key: process.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+  prod: { url: process.env.VITE_SUPABASE_URL_PROD, key: process.env.VITE_SUPABASE_PUBLISHABLE_KEY_PROD },
+};
+const dbFor = (host) => {
+  const h = String(host || "").split(":")[0].toLowerCase();
+  return PROD_HOSTS.includes(h) && DB.prod.url && DB.prod.key ? "prod" : "dev";
+};
 const RESERVED = new Set(["panel", "ingresar", "demo", "estado", "assets", "admin", "api", "ayuda", "terminos", "privacidad", "planes", "precios", "login", "app", "www", "hacemeprecio", "haceme-precio", "soporte", "contacto", "baja", "arrepentimiento", "pedido", "pedidos"]);
 const SLUG = /^[a-z0-9-]{3,80}$/;
 
@@ -30,20 +39,21 @@ async function cached(key, fn) {
   return value;
 }
 
-async function rest(q) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${q}`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }, signal: AbortSignal.timeout(2500) });
+async function rest(env, q) {
+  const { url, key } = DB[env];
+  const r = await fetch(`${url}/rest/v1/${q}`, { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(2500) });
   if (!r.ok) return null;
   return r.json();
 }
 
-async function metaFor(urlPath) {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+async function metaFor(urlPath, env) {
+  if (!DB[env].url || !DB[env].key) return null;
   const parts = urlPath.split("/").filter(Boolean).map((p) => decodeURIComponent(p).toLowerCase());
   if (!parts.length || parts.length > 2 || RESERVED.has(parts[0]) || !parts.every((p) => SLUG.test(p))) return null;
   const [sellerSlug, productSlug] = parts;
   if (productSlug) {
-    const rows = await cached(`p:${sellerSlug}/${productSlug}`, () =>
-      rest(`products?select=title,list_price,photos,description,status,sellers!inner(name,slug)&slug=eq.${productSlug}&sellers.slug=eq.${sellerSlug}&limit=1`));
+    const rows = await cached(`${env}:p:${sellerSlug}/${productSlug}`, () =>
+      rest(env, `products?select=title,list_price,photos,description,status,sellers!inner(name,slug)&slug=eq.${productSlug}&sellers.slug=eq.${sellerSlug}&limit=1`));
     const p = rows?.[0];
     if (!p) return null;
     const sold = p.status === "vendida";
@@ -53,7 +63,7 @@ async function metaFor(urlPath) {
       image: p.photos?.[0],
     };
   }
-  const rows = await cached(`s:${sellerSlug}`, () => rest(`sellers?select=name,slug,stores(tagline,logo_url,banner_url)&slug=eq.${sellerSlug}&limit=1`));
+  const rows = await cached(`${env}:s:${sellerSlug}`, () => rest(env, `sellers?select=name,slug,stores(tagline,logo_url,banner_url)&slug=eq.${sellerSlug}&limit=1`));
   const s = rows?.[0];
   if (!s) return null;
   const st = Array.isArray(s.stores) ? s.stores[0] : s.stores;
@@ -84,7 +94,7 @@ app.use("/assets", express.static(path.join(DIST, "assets"), { immutable: true, 
 app.use(express.static(DIST, { index: false, maxAge: "1h" }));
 app.get("/healthz", (_req, res) => res.type("text").send("ok"));
 app.get("*", async (req, res) => {
-  const meta = await metaFor(req.path).catch(() => null);
+  const meta = await metaFor(req.path, dbFor(req.get("host"))).catch(() => null);
   res.set("Cache-Control", "no-cache").type("html").send(render(meta, `${req.protocol}://${req.get("host")}${req.originalUrl}`));
 });
 
