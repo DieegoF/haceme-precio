@@ -54,7 +54,8 @@ export default function SellerPage() {
   return (
     <Phone wide className={seller.store ? "pb-28" : "pb-10"}>
       <header className="flex items-center justify-between px-4 py-3 lg:px-8">
-        <Link to="/" aria-label="Haceme Precio"><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-6 w-auto" /></Link>
+        {/* En la vidriera el logo no es un link: así nadie se va sin querer a la página de Haceme Precio mientras compra. */}
+        <img src={LOGO_HORIZ} alt="Haceme Precio" className="h-6 w-auto" />
         <button onClick={share} className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-[12px] font-semibold"><Share2 size={13} /> {shared || "Compartir"}</button>
       </header>
       {seller.store ? <StoreHeader seller={seller} store={seller.store} reviews={reviews} /> : (
@@ -110,7 +111,10 @@ export default function SellerPage() {
           {seller.store && <StoreFaq store={seller.store} />}
         </div>
       )}
-      <div className="mt-10 flex justify-center pb-6"><ReportButton kind="vendedor" target={seller.id} /></div>
+      <div className="mt-10 flex flex-col items-center gap-3 pb-6">
+        <ReportButton kind="vendedor" target={seller.id} />
+        <a href="/" target="_blank" rel="noreferrer" className="text-[12px] text-zinc-500">Hecho con <b className="text-zinc-700">Haceme Precio</b> · Creá tu vidriera gratis</a>
+      </div>
       {seller.store && <CartBar seller={seller} store={seller.store} />}
     </Phone>
   );

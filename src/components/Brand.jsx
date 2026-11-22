@@ -1,11 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { LOGO_HORIZ } from "../prototype/brand.js";
+import { useAuth } from "../lib/auth.jsx";
 
+// Logo arriba. Con sesión iniciada lleva al panel (no a la página de inicio), para no perderse navegando.
 export function BrandBar({ right }) {
+  const { session } = useAuth();
   return (
     <header className="flex items-center justify-between px-5 pt-5">
-      <Link to="/" aria-label="Haceme Precio, inicio"><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-7 w-auto" /></Link>
+      <Link to={session ? "/panel" : "/"} aria-label={session ? "Haceme Precio, mi panel" : "Haceme Precio, inicio"}><img src={LOGO_HORIZ} alt="Haceme Precio" className="h-7 w-auto" /></Link>
       {right}
     </header>
   );
