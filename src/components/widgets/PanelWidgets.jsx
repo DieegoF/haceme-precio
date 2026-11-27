@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Clock, Eye, Handshake, Inbox, MessageCircle, Package, Radar, ShoppingBag, TrendingDown, TrendingUp } from "lucide-react";
+import { Clock, Eye, Handshake, Inbox, Lock, MessageCircle, Package, Radar, ShoppingBag, TrendingDown, TrendingUp, X } from "lucide-react";
 import { supabase } from "../../lib/supabase.js";
 import { useNow } from "../../lib/offers.js";
 import { ORDER_STATUS } from "../../lib/cart.js";
@@ -13,6 +13,7 @@ export const WIDGETS = [
   { id: "publicaciones", for: ["vendedor"], Component: ProductsWidget },
   { id: "visitas", for: ["vendedor"], Component: VisitsWidget },
   { id: "compartir", for: ["vendedor"], Component: ShareWidget },
+  { id: "muestra-tienda", for: ["vendedor"], Component: StoreTeaserWidget, wide: true, show: teaserVisible },
   { id: "negociacion", for: ["tienda"], Component: NegotiationWidget },
   { id: "pedidos-estado", for: ["tienda"], Component: OrdersStatusWidget },
   { id: "mas-vistos", for: ["tienda"], Component: TopViewedWidget, wide: true },
@@ -28,12 +29,14 @@ const GRID = {
   vendedor: "grid-cols-2 lg:grid-cols-4",
   tienda: "grid-cols-1 sm:grid-cols-2",
 };
+const WIDE = { vendedor: "col-span-2 lg:col-span-4", tienda: "sm:col-span-2" };
 
 // refreshKey: cuando cambia (p. ej. la lista de ofertas se recargó), los números se vuelven a pedir.
 // period: solo para la tienda ('hoy' | '7d' | 'mes').
 export default function PanelWidgets({ seller, refreshKey, period = "mes" }) {
   const area = seller.is_store ? "tienda" : "vendedor";
-  const list = WIDGETS.filter((w) => w.for.includes(area));
+  const [, setHidden] = useState(0); // un widget que se oculta («Ahora no») vuelve a pintar la grilla
+  const list = WIDGETS.filter((w) => w.for.includes(area) && (!w.show || w.show()));
   const [data, setData] = useState(null);
   useEffect(() => {
     const fetcher = SOURCE[area];
@@ -48,8 +51,8 @@ export default function PanelWidgets({ seller, refreshKey, period = "mes" }) {
   return (
     <section aria-label="Tu resumen" className={`mt-4 grid gap-2 ${GRID[area]}`}>
       {list.map(({ id, Component, wide }) => (
-        <div key={id} className={wide ? "sm:col-span-2" : undefined}>
-          {data ? <Component data={data} seller={seller} /> : <div className="h-[112px] animate-pulse rounded-2xl bg-zinc-100" />}
+        <div key={id} className={wide ? WIDE[area] : undefined}>
+          {data ? <Component data={data} seller={seller} onHide={() => setHidden((n) => n + 1)} /> : <div className="h-[112px] animate-pulse rounded-2xl bg-zinc-100" />}
         </div>
       ))}
     </section>
@@ -115,6 +118,45 @@ function ShareWidget({ seller }) {
   const text = `Mirá lo que tengo a la venta y haceme precio 👉 ${url}`;
   return <Card tone="whatsapp" href={`https://wa.me/?text=${encodeURIComponent(text)}`} Icon={MessageCircle}
     label="WhatsApp" value="Compartir" sub="Mandá tu vidriera a tus contactos o a tu estado." />;
+}
+
+// Muestra bloqueada del plan Tienda: se ve una sola, y con «Ahora no» se esconde 14 días.
+const TEASER_KEY = "hp_muestra_tienda_hasta";
+function teaserVisible() {
+  try { return Date.now() > Number(localStorage.getItem(TEASER_KEY) || 0); } catch { return true; }
+}
+const FAKE_BARS = [["WhatsApp", 58, "bg-[#25D366]"], ["Instagram", 27, "bg-pink-500"], ["Facebook", 15, "bg-blue-600"]];
+
+function StoreTeaserWidget({ data, onHide }) {
+  const hide = () => {
+    try { localStorage.setItem(TEASER_KEY, String(Date.now() + 14 * 86400000)); } catch { /* sin almacenamiento */ }
+    onHide();
+  };
+  const v = data.visits;
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-ink p-4 text-white sm:flex sm:items-center sm:gap-6">
+      <button onClick={hide} aria-label="Ocultar" className="absolute right-2 top-2 rounded-full p-1.5 text-white/50 hover:text-white"><X size={16} /></button>
+      <div className="min-w-0 flex-1">
+        <p className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white/80"><Lock size={11} /> Plan Tienda</p>
+        <p className="mt-2 pr-6 font-display text-[18px] font-extrabold leading-tight">
+          {v > 0 ? `Esta semana tuviste ${v} ${v === 1 ? "visita" : "visitas"}. ¿De dónde vinieron?` : "¿Querés saber de dónde llega tu gente?"}
+        </p>
+        <p className="mt-1 text-[13px] text-white/70">Con el plan Tienda ves si te encuentran por WhatsApp, Instagram o Facebook, qué producto miran y no compran, y cuánto descuento negociás.</p>
+        <div className="mt-3 flex items-center gap-3">
+          <Link to="/panel/cuenta#plan" className="inline-flex min-h-[42px] items-center rounded-xl bg-hpred px-4 text-[14px] font-semibold text-white">Ver plan Tienda</Link>
+          <button onClick={hide} className="text-[13px] font-semibold text-white/60 underline">Ahora no</button>
+        </div>
+      </div>
+      <div aria-hidden="true" className="pointer-events-none mt-4 select-none space-y-2 blur-[3px] sm:mt-0 sm:w-56">
+        {FAKE_BARS.map(([l, pct, c]) => (
+          <div key={l}>
+            <div className="flex justify-between text-[12px] text-white/80"><span>{l}</span><span>{pct}%</span></div>
+            <div className="mt-1 h-2 rounded-full bg-white/10"><div className={`h-2 rounded-full ${c}`} style={{ width: `${pct}%` }} /></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // ───────────── Widgets del modo Tienda ─────────────
