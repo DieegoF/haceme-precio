@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Clock, Eye, Inbox, MessageCircle, Package, TrendingDown, TrendingUp } from "lucide-react";
+import { Clock, Eye, Handshake, Inbox, MessageCircle, Package, Radar, ShoppingBag, TrendingDown, TrendingUp } from "lucide-react";
 import { supabase } from "../../lib/supabase.js";
 import { useNow } from "../../lib/offers.js";
+import { ORDER_STATUS } from "../../lib/cart.js";
 
 // Registro único de widgets del panel. Cada widget dice para quién es:
 //   "vendedor" (Gratis / Básico) o "tienda" (modo Tienda).
@@ -12,30 +13,45 @@ export const WIDGETS = [
   { id: "publicaciones", for: ["vendedor"], Component: ProductsWidget },
   { id: "visitas", for: ["vendedor"], Component: VisitsWidget },
   { id: "compartir", for: ["vendedor"], Component: ShareWidget },
+  { id: "negociacion", for: ["tienda"], Component: NegotiationWidget },
+  { id: "pedidos-estado", for: ["tienda"], Component: OrdersStatusWidget },
+  { id: "mas-vistos", for: ["tienda"], Component: TopViewedWidget, wide: true },
+  { id: "origen", for: ["tienda"], Component: SourcesWidget, wide: true },
 ];
 
-const SOURCE = { vendedor: "seller_home" };
+// De dónde salen los números de cada área (un solo pedido al servidor por área).
+const SOURCE = {
+  vendedor: () => supabase.rpc("seller_home"),
+  tienda: (period) => supabase.rpc("store_insights", { p_period: period }),
+};
+const GRID = {
+  vendedor: "grid-cols-2 lg:grid-cols-4",
+  tienda: "grid-cols-1 sm:grid-cols-2",
+};
 
 // refreshKey: cuando cambia (p. ej. la lista de ofertas se recargó), los números se vuelven a pedir.
-export default function PanelWidgets({ seller, refreshKey }) {
+// period: solo para la tienda ('hoy' | '7d' | 'mes').
+export default function PanelWidgets({ seller, refreshKey, period = "mes" }) {
   const area = seller.is_store ? "tienda" : "vendedor";
   const list = WIDGETS.filter((w) => w.for.includes(area));
   const [data, setData] = useState(null);
   useEffect(() => {
-    const rpc = SOURCE[area];
-    if (!rpc || !list.length) return undefined;
+    const fetcher = SOURCE[area];
+    if (!fetcher || !list.length) return undefined;
     let alive = true;
-    const load = () => supabase.rpc(rpc).then(({ data: d }) => { if (alive && d) setData(d); });
-    load();
+    setData(null);
+    fetcher(period).then(({ data: d }) => { if (alive && d) setData(d); });
     return () => { alive = false; };
-  }, [area, list.length, refreshKey]);
+  }, [area, list.length, refreshKey, period]);
 
   if (!list.length) return null;
   return (
-    <section aria-label="Tu resumen" className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
-      {list.map(({ id, Component }) => data
-        ? <Component key={id} data={data} seller={seller} />
-        : <div key={id} className="h-[112px] animate-pulse rounded-2xl bg-zinc-100" />)}
+    <section aria-label="Tu resumen" className={`mt-4 grid gap-2 ${GRID[area]}`}>
+      {list.map(({ id, Component, wide }) => (
+        <div key={id} className={wide ? "sm:col-span-2" : undefined}>
+          {data ? <Component data={data} seller={seller} /> : <div className="h-[112px] animate-pulse rounded-2xl bg-zinc-100" />}
+        </div>
+      ))}
     </section>
   );
 }
@@ -99,4 +115,92 @@ function ShareWidget({ seller }) {
   const text = `Mirá lo que tengo a la venta y haceme precio 👉 ${url}`;
   return <Card tone="whatsapp" href={`https://wa.me/?text=${encodeURIComponent(text)}`} Icon={MessageCircle}
     label="WhatsApp" value="Compartir" sub="Mandá tu vidriera a tus contactos o a tu estado." />;
+}
+
+// ───────────── Widgets del modo Tienda ─────────────
+
+function Box({ Icon, label, children }) {
+  return (
+    <div className="h-full rounded-2xl bg-white p-3.5 ring-1 ring-zinc-200">
+      <p className="flex items-center gap-1.5 text-[12px] font-semibold text-zinc-500"><Icon size={14} /> {label}</p>
+      {children}
+    </div>
+  );
+}
+
+function NegotiationWidget({ data }) {
+  const { received, accepted, auto_stopped: stopped, avg_discount: disc } = data.negotiation;
+  if (!received) {
+    return <Card Icon={Handshake} label="Negociación" value="—"
+      sub="No recibiste ofertas en este período. Activá «Acepta ofertas» en los productos que quieras negociar." />;
+  }
+  const extra = [`${accepted} de ${received} cerraron trato`, stopped && `${stopped} ${stopped === 1 ? "frenada" : "frenadas"} sola${stopped === 1 ? "" : "s"}`].filter(Boolean).join(" · ");
+  return <Card Icon={Handshake} label="Descuento promedio negociado" value={accepted ? `−${disc}%` : "—"} sub={extra} />;
+}
+
+function OrdersStatusWidget({ data }) {
+  const entries = Object.keys(ORDER_STATUS).filter((k) => data.orders[k]);
+  const total = entries.reduce((a, k) => a + data.orders[k], 0);
+  return (
+    <Box Icon={ShoppingBag} label="Pedidos por estado">
+      <p className="mt-1 font-display text-[28px] font-black leading-none">{total}</p>
+      {total ? (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {entries.map((k) => <span key={k} className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${ORDER_STATUS[k].tone}`}>{data.orders[k]} {ORDER_STATUS[k].label.toLowerCase()}</span>)}
+        </div>
+      ) : <p className="mt-1.5 text-[12px] text-zinc-500">Sin pedidos en este período.</p>}
+    </Box>
+  );
+}
+
+function TopViewedWidget({ data }) {
+  const items = data.products;
+  return (
+    <Box Icon={Eye} label="Lo más visto y cuánto se vendió">
+      {!items.length ? <p className="mt-2 text-[13px] text-zinc-500">Todavía no hay visitas a productos en este período. Se empiezan a contar desde hoy.</p> : (
+        <ul className="mt-2 space-y-2">
+          {items.map((p) => {
+            const cold = p.views >= 5 && !p.sold;
+            return (
+              <li key={p.id} className="flex items-center gap-2.5">
+                {p.photo ? <img src={p.photo} alt="" className="h-10 w-10 shrink-0 rounded-lg bg-zinc-100 object-cover" /> : <span className="h-10 w-10 shrink-0 rounded-lg bg-zinc-100" />}
+                <Link to={`/panel/producto/${p.id}`} className="min-w-0 flex-1">
+                  <p className="truncate text-[14px] font-medium">{p.title}</p>
+                  {cold
+                    ? <p className="text-[12px] font-semibold text-amber-700">Lo miran y no lo compran: revisá precio o fotos</p>
+                    : <p className="text-[12px] text-zinc-500">{p.sold ? `${p.sold} ${p.sold === 1 ? "vendido" : "vendidos"}` : "sin ventas todavía"}</p>}
+                </Link>
+                <span className="shrink-0 text-right text-[13px] font-bold">{p.views}<span className="block text-[10px] font-semibold text-zinc-400">visitas</span></span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </Box>
+  );
+}
+
+const SOURCE_LABEL = { whatsapp: "WhatsApp", instagram: "Instagram", facebook: "Facebook", directo: "Link directo", otro: "Otros sitios" };
+const SOURCE_BAR = { whatsapp: "bg-[#25D366]", instagram: "bg-pink-500", facebook: "bg-blue-600", directo: "bg-ink", otro: "bg-zinc-400" };
+
+function SourcesWidget({ data }) {
+  const rows = Object.entries(data.sources).sort((a, b) => b[1] - a[1]);
+  const total = rows.reduce((a, [, n]) => a + n, 0);
+  return (
+    <Box Icon={Radar} label="De dónde vienen tus visitas">
+      {!total ? <p className="mt-2 text-[13px] text-zinc-500">Se empiezan a contar desde hoy. Compartí tu link en WhatsApp e Instagram y acá vas a ver cuál te trae más gente.</p> : (
+        <ul className="mt-2 space-y-2">
+          {rows.map(([k, n]) => {
+            const pct = Math.round((n / total) * 100);
+            return (
+              <li key={k}>
+                <div className="flex justify-between text-[13px]"><span className="font-medium">{SOURCE_LABEL[k] || k}</span><span className="font-bold">{pct}% <span className="font-normal text-zinc-400">({n})</span></span></div>
+                <div className="mt-1 h-2 rounded-full bg-zinc-100"><div className={`h-2 rounded-full ${SOURCE_BAR[k] || "bg-zinc-400"}`} style={{ width: `${Math.max(pct, 3)}%` }} /></div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </Box>
+  );
 }
