@@ -23,14 +23,40 @@ export function priceFor(product, store, now = Date.now()) {
 }
 export const offPct = (price, was) => (was > price ? Math.round((1 - price / was) * 100) : 0);
 
-// Cuenta una visita por sesión del navegador (sin datos de quién visita).
-export function trackVisit(sellerId) {
+// De dónde llegó la visita: ?ref= de los links que comparte el vendedor o, si no, la página anterior.
+const REF = { wa: "whatsapp", ig: "instagram", fb: "facebook" };
+export function visitSource() {
   try {
-    const k = `hp_visit_${sellerId}`;
-    if (sessionStorage.getItem(k)) return;
-    sessionStorage.setItem(k, "1");
-  } catch { /* sin almacenamiento: contamos igual */ }
-  supabase.rpc("track_visit", { p_seller: sellerId }).then(() => {}, () => {});
+    const u = new URL(window.location.href);
+    const ref = u.searchParams.get("ref");
+    if (ref) {
+      u.searchParams.delete("ref");
+      window.history.replaceState(window.history.state, "", u.pathname + u.search + u.hash);
+      return REF[ref] || "otro";
+    }
+    const host = document.referrer ? new URL(document.referrer).hostname : "";
+    if (!host || host === window.location.hostname) return "directo";
+    if (/whatsapp|wa\.me/.test(host)) return "whatsapp";
+    if (/instagram/.test(host)) return "instagram";
+    if (/facebook|fb\.|messenger/.test(host)) return "facebook";
+    return "otro";
+  } catch { return "directo"; }
+}
+
+// Cuenta una visita por sesión del navegador al vendedor (con su origen) y, si hay, al producto.
+// No guarda quién visita: solo suma contadores por día.
+export function trackVisit(sellerId, productId = null) {
+  let src = null, prod = null;
+  try {
+    const ks = `hp_visit_${sellerId}`;
+    if (!sessionStorage.getItem(ks)) { sessionStorage.setItem(ks, "1"); src = visitSource(); }
+    if (productId) {
+      const kp = `hp_visit_p_${productId}`;
+      if (!sessionStorage.getItem(kp)) { sessionStorage.setItem(kp, "1"); prod = productId; }
+    }
+  } catch { src = visitSource(); prod = productId; } // sin almacenamiento: contamos igual
+  if (!src && !prod) return;
+  supabase.rpc("track_visit", { p_seller: sellerId, p_product: prod, p_source: src }).then(() => {}, () => {});
 }
 
 export const countdown = (iso, now) => {

@@ -29,7 +29,7 @@ export default function SellerPage() {
       if (!alive) return;
       setState({ loading: false, seller, products });
       if (seller) document.title = `${seller.name} · Haceme Precio`;
-      if (seller?.store) trackVisit(seller.id);
+      if (seller) trackVisit(seller.id);
     })();
     return () => { alive = false; };
   }, [sellerSlug]);
