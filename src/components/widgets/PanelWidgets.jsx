@@ -73,7 +73,7 @@ function Card({ to, href, onClick, tone = "plain", Icon, label, value, sub, subT
       {sub && <p className={`mt-1.5 text-[12px] leading-snug ${subTone || (tone === "plain" ? "text-zinc-500" : "text-white/85")}`}>{sub}</p>}
     </>
   );
-  const cls = `block min-h-[112px] rounded-2xl p-3.5 text-left transition active:scale-[0.98] ${tones[tone]}`;
+  const cls = `block h-full w-full min-h-[112px] rounded-2xl p-3.5 text-left transition active:scale-[0.98] ${tones[tone]}`;
   if (to) return <Link to={to} className={cls}>{inner}</Link>;
   if (href) return <a href={href} target="_blank" rel="noreferrer" className={cls}>{inner}</a>;
   return <button type="button" onClick={onClick} className={cls}>{inner}</button>;
@@ -180,6 +180,12 @@ function NegotiationWidget({ data }) {
   return <Card Icon={Handshake} label="Descuento promedio negociado" value={accepted ? `−${disc}%` : "—"} sub={extra} />;
 }
 
+// «18 confirmados», «1 confirmado», «3 esperando confirmación».
+const statusLabel = (k, n) => {
+  const l = ORDER_STATUS[k].label.toLowerCase();
+  return n === 1 || l.includes(" ") ? l : `${l}s`;
+};
+
 function OrdersStatusWidget({ data }) {
   const entries = Object.keys(ORDER_STATUS).filter((k) => data.orders[k]);
   const total = entries.reduce((a, k) => a + data.orders[k], 0);
@@ -188,7 +194,7 @@ function OrdersStatusWidget({ data }) {
       <p className="mt-1 font-display text-[28px] font-black leading-none">{total}</p>
       {total ? (
         <div className="mt-2 flex flex-wrap gap-1">
-          {entries.map((k) => <span key={k} className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${ORDER_STATUS[k].tone}`}>{data.orders[k]} {ORDER_STATUS[k].label.toLowerCase()}</span>)}
+          {entries.map((k) => <span key={k} className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${ORDER_STATUS[k].tone}`}>{data.orders[k]} {statusLabel(k, data.orders[k])}</span>)}
         </div>
       ) : <p className="mt-1.5 text-[12px] text-zinc-500">Sin pedidos en este período.</p>}
     </Box>
