@@ -1,5 +1,5 @@
-import React from "react";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { useAuth } from "../../lib/auth.jsx";
 import { BrandBar } from "../../components/Brand.jsx";
 import StoreEditor from "./StoreEditor.jsx";
@@ -13,6 +13,9 @@ export default function Cuenta() {
   const { seller, account, store, reload } = useOutletContext();
   const { session } = useAuth();
   const nav = useNavigate();
+  const { hash } = useLocation();
+  // Si llega desde «Ver plan Tienda» (#plan), baja directo a los planes.
+  useEffect(() => { if (hash === "#plan") setTimeout(() => document.getElementById("plan")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }, [hash]);
   const salir = async () => { await signOutAndForgetDevice(); nav("/", { replace: true }); };
   return (
     <>
@@ -28,7 +31,7 @@ export default function Cuenta() {
             <p className="font-bold">Cuenta de prueba</p>
             <p className="mt-1">Acá vas a ver tu plan, hasta cuándo lo tenés y el botón para pagarlo con Mercado Pago. También vas a conectar tu Mercado Pago para cobrar directo.</p>
           </section>
-        ) : <PlanCard account={account} onPaid={reload} />}
+        ) : <div id="plan" className="scroll-mt-4"><PlanCard account={account} onPaid={reload} /></div>}
 
         {account?.is_admin && <button onClick={() => nav("/admin")} className="mt-4 w-full rounded-2xl bg-zinc-900 py-3 text-[14px] font-semibold text-white">Panel de administración</button>}
         {!seller.is_demo && <PushToggle />}
