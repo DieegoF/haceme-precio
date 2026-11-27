@@ -4,6 +4,7 @@ import { Clock, Lock, MessageCircle, CheckCircle2, Undo2, Inbox } from "lucide-r
 import { getSellerOffers, sellerAction, offerError, useNow, left, hhmm, waLink } from "../../lib/offers.js";
 import { fmt, parseMoney, moneyInput } from "../../lib/format.js";
 import { BrandBar } from "../../components/Brand.jsx";
+import PanelWidgets from "../../components/widgets/PanelWidgets.jsx";
 
 const HIST = {
   vendida: ["Vendido", "bg-ink text-white"], rechazada_auto: ["Frenada sola", "bg-zinc-200 text-zinc-700"], rechazada: ["Rechazada", "bg-zinc-200 text-zinc-700"],
@@ -35,6 +36,7 @@ export default function Ofertas() {
       <main className="px-5 pt-5">
         <p className="text-sm text-zinc-500">Hola, {seller.name} 👋</p>
         <h1 className="font-display text-2xl font-extrabold">Ofertas</h1>
+        {!seller.is_store && <PanelWidgets seller={seller} refreshKey={items} />}
         {autoStopped > 0 && <p className="mt-2 rounded-xl bg-zinc-50 p-3 text-[13px] text-zinc-700 ring-1 ring-zinc-200">🛡️ Esta semana se frenaron solas <b>{autoStopped}</b> ofertas bajas. No tuviste que contestar ninguna.</p>}
         {err && <p className="mt-3 rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-800 ring-1 ring-rose-200">{err}</p>}
 
@@ -48,8 +50,8 @@ export default function Ofertas() {
             </div>
           ) : (
             <>
-              <Section title="Trato hecho · coordiná la entrega" items={deals} render={(o) => <Deal key={o.id} o={o} seller={seller} onAct={act} />} />
-              <Section title="Para responder" items={pending} render={(o) => <Pending key={o.id} o={o} onAct={act} />} />
+              <Section id="trato-hecho" title="Trato hecho · coordiná la entrega" items={deals} render={(o) => <Deal key={o.id} o={o} seller={seller} onAct={act} />} />
+              <Section id="para-responder" title="Para responder" items={pending} render={(o) => <Pending key={o.id} o={o} onAct={act} />} />
               <Section title="Esperando al comprador" items={waiting} render={(o) => <Waiting key={o.id} o={o} seller={seller} />} />
               {history.length > 0 && (
                 <section className="mt-6">
@@ -78,10 +80,10 @@ export default function Ofertas() {
   );
 }
 
-function Section({ title, items, render }) {
+function Section({ id, title, items, render }) {
   if (!items.length) return null;
   return (
-    <section className="mt-5">
+    <section id={id} className="mt-5 scroll-mt-20">
       <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">{title} · {items.length}</h2>
       <ul className="mt-2 space-y-3">{items.map(render)}</ul>
     </section>

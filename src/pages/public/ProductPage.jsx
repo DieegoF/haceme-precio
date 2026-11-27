@@ -29,7 +29,7 @@ export default function ProductPage() {
       if (!alive) return;
       setState({ loading: false, seller, product });
       if (product) document.title = `${product.title} · ${fmt(product.list_price)}`;
-      if (seller?.store) trackVisit(seller.id);
+      if (seller) trackVisit(seller.id, product?.id);
     })();
     return () => { alive = false; };
   }, [sellerSlug, productSlug]);
